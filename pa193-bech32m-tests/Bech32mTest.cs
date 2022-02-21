@@ -23,7 +23,7 @@ namespace pa193_bech32m_tests
             Assert.IsNotNull(result);
             Assert.IsNotEmpty(result);
         }
-        
+
         [TestCase("\x20" + "1nwldj5")]
         [TestCase("\x7f" + "1axkwrx")]
         [TestCase("\x80" + "1axkwrx")]
@@ -42,13 +42,14 @@ namespace pa193_bech32m_tests
         {
             Assert.IsNull(Bech32m.Decode(input));
         }
-        
+
         [TestCase("BC1QW508D6QEJXTDG4Y5R3ZARVARY0C5XW7KV8F3T4", "0014751e76e8199196d454941c45d1b3a323f1433bd6")]
-        [TestCase("tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7", "00201863143c14c5166804bd19203356da136c985678cd4d27a1b8c6329604903262")]
+        [TestCase("tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7",
+            "00201863143c14c5166804bd19203356da136c985678cd4d27a1b8c6329604903262")]
         public void DecodesAndEncodesValidStrings(string input, string output)
         {
             Assert.Equals(Bech32m.Decode(input), output);
             Assert.Equals(Bech32m.Encode(output), input);
-        }       
+        }
     }
 }
