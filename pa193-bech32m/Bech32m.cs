@@ -56,6 +56,7 @@ namespace pa193_bech32m
                 )
             );
 
+            inputInBinary = inputInBinary.PadRight(Convert.ToInt32(5 * Math.Ceiling(inputInBinary.Length / 5.0)), '0');
             var result = new List<int>();
             for (var i = 0; i < inputInBinary.Length; i += 5)
             {
@@ -67,8 +68,39 @@ namespace pa193_bech32m
             return result;
         }
 
+        private static bool IsValidHrp(string hrp)
+        {
+            if (string.IsNullOrEmpty(hrp) || hrp.Length > 83)
+            {
+                return false;
+            }
+
+            if (hrp.Any(c => c < 33 || c > 126))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool IsValidInput(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return false;
+            }
+
+
+            return true;
+        }
+
         public static string Encode(string hrp, string input)
         {
+            if (!IsValidHrp(hrp) || !IsValidInput(input))
+            {
+                return "";
+            }
+
             var data = ConvertToBase32(input);
             var checksum = CreateChecksum(hrp, data);
             var combined = data.Concat(checksum);

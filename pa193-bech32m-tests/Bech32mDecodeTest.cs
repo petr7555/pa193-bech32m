@@ -3,13 +3,8 @@ using pa193_bech32m;
 
 namespace pa193_bech32m_tests
 {
-    public class Bech32mTest
+    public class Bech32mDecodeTest
     {
-        [SetUp]
-        public void Setup()
-        {
-        }
-
         [TestCase("A1LQFN3A")]
         [TestCase("a1lqfn3a")]
         [TestCase("an83characterlonghumanreadablepartthatcontainsthetheexcludedcharactersbioandnumber11sg7hg6")]
@@ -77,10 +72,8 @@ namespace pa193_bech32m_tests
         [Ignore("Decode not implemented yet")]
         public void DecodesAndEncodesValidStrings(string input, string output)
         {
-            Assert.AreEqual(Bech32m.Decode(input), output);
-            // Assert.AreEqual(Bech32m.Encode(output), input);
+            Assert.AreEqual(output, Bech32m.Decode(input));
+            // Assert.AreEqual(input, Bech32m.Encode(output));
         }
-        
-        
     }
 }
