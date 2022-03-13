@@ -85,11 +85,17 @@ namespace pa193_bech32m
 
         private static bool IsValidInput(string input)
         {
-            if (string.IsNullOrEmpty(input))
+            if (input is null)
             {
                 return false;
             }
 
+            if (input.Any(c => (c < '0' || c > '9') &&
+                               (c < 'a' || c > 'f') &&
+                               (c < 'A' || c > 'F')))
+            {
+                return false;
+            }
 
             return true;
         }
