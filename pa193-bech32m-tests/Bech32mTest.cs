@@ -74,8 +74,8 @@ namespace pa193_bech32m_tests
             "512079be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798")]
         public void DecodesAndEncodesValidStrings(string input, string output)
         {
-            Assert.Equals(Bech32m.Decode(input), output);
-            Assert.Equals(Bech32m.Encode(output), input);
+            Assert.AreEqual(Bech32m.Decode(input), output);
+            Assert.AreEqual(Bech32m.Encode(output), input);
         }
     }
 }
