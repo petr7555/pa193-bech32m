@@ -24,23 +24,28 @@ namespace pa193_bech32m
             {
                 var top = chk >> 25;
                 chk = (chk & 0x1ffffff) << 5 ^ val;
-                for (var i = 0; i < 5; ++i) {
-                    if (((top >> i) & 1) == 1) {
+                for (var i = 0; i < 5; ++i)
+                {
+                    if (((top >> i) & 1) == 1)
+                    {
                         chk ^= Generator[i];
                     }
                 }
             }
+
             return chk;
         }
-        
+
         private static List<int> CreateChecksum(string hrp, List<int> data)
         {
             var values = HrpExpand(hrp).Concat(data).Concat(new[] {0, 0, 0, 0, 0, 0}).ToList();
-            var polymod = Polymod(values) ^ 1;
+            var polymod = Polymod(values) ^ 0x2bc830a3;
             var result = new List<int>();
-            for (var p = 0; p < 6; ++p) {
+            for (var p = 0; p < 6; ++p)
+            {
                 result.Add((polymod >> 5 * (5 - p)) & 31);
             }
+
             return result;
         }
 
@@ -50,7 +55,7 @@ namespace pa193_bech32m
                     c => Convert.ToString(Convert.ToInt32(c.ToString(), 16), 2).PadLeft(4, '0')
                 )
             );
-            
+
             var result = new List<int>();
             for (var i = 0; i < inputInBinary.Length; i += 5)
             {
