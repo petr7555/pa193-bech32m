@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace pa193_bech32m
 {
@@ -6,7 +8,8 @@ namespace pa193_bech32m
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var res = Bech32m.Encode("abc", "751e76e8199196d454941c45d1b3a323f1433bd6");
+            Console.WriteLine(res);
         }
     }
 }
