@@ -127,7 +127,7 @@ namespace pa193_bech32m_tests
         {
             Assert.IsEmpty(Bech32m.Encode("abc", input));
         }
-        
+
         [TestCase('z', 1000)]
         [TestCase('z', 1_000_000)]
         [TestCase('a', 1001)]
