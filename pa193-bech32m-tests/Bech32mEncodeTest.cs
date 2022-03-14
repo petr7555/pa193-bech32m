@@ -5,10 +5,6 @@ namespace pa193_bech32m_tests
 {
     public class Bech32mEncodeTest
     {
-        // TODO how should behave with odd number of characters?
-        // [TestCase("abc", "0", "abc1qe8w0su")]
-        // [TestCase("abc", "1", "abc1z2z0vr3")]
-        // [TestCase("abc", "123", "abc1zgc58h34a")]
         [TestCase("abc", "", "abc1k7c8sc")]
         [TestCase("abc", "00", "abc1qqlu4nty")]
         [TestCase("abc", "01", "abc1qyskh4y7")]
@@ -116,12 +112,15 @@ namespace pa193_bech32m_tests
             Assert.IsEmpty(Bech32m.Encode("abc", null));
         }
 
+        [TestCase("0")]
+        [TestCase("1")]
+        [TestCase("123")]
         [TestCase("z")]
         [TestCase("xx")]
         [TestCase("abz")]
         [TestCase(" ")]
-        [TestCase("\x7f")]
-        [TestCase("a\x7f" + "b")]
+        [TestCase("\x7f\x7f")]
+        [TestCase("a\x7f" + "bc")]
         [TestCase("5\x80")]
         [TestCase("\x00")]
         [TestCase("\x14")]

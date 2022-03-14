@@ -89,6 +89,11 @@ namespace pa193_bech32m
             {
                 return false;
             }
+            
+            if (input.Length % 2 == 1)
+            {
+                return false;
+            }
 
             if (input.Any(c => (c < '0' || c > '9') &&
                                (c < 'a' || c > 'f') &&
