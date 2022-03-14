@@ -5,12 +5,15 @@ namespace pa193_bech32m_tests
 {
     public class Bech32mEncodeTest
     {
-        [TestCase("abc", "0", "abc1qe8w0su")]
-        [TestCase("abc", "1", "abc1z2z0vr3")]
+        // TODO how should behave with odd number of characters?
+        // [TestCase("abc", "0", "abc1qe8w0su")]
+        // [TestCase("abc", "1", "abc1z2z0vr3")]
+        // [TestCase("abc", "123", "abc1zgc58h34a")]
+        [TestCase("abc", "", "abc1k7c8sc")]
         [TestCase("abc", "00", "abc1qqlu4nty")]
         [TestCase("abc", "01", "abc1qyskh4y7")]
-        [TestCase("abc", "01", "abc1qyskh4y7")]
-        [TestCase("abc", "123", "abc1zgc58h34a")]
+        [TestCase("abc", "0000", "abc1qqqqdwreek")]
+        [TestCase("abc", "0001", "abc1qqqsc0tpv9")]
         [TestCase("abc", "12ef", "abc1zths84d6rg")]
         [TestCase("abc", "12Ef", "abc1zths84d6rg")]
         [TestCase("abc", "12EF", "abc1zths84d6rg")]
@@ -56,9 +59,7 @@ namespace pa193_bech32m_tests
         [Test]
         public void ReturnsNonZeroLengthStringWhenInputIsEmpty()
         {
-            var result = Bech32m.Encode("abc", "");
-            Assert.IsNotNull(result);
-            Assert.IsNotEmpty(result);
+            StringAssert.HasNonZeroLength(Bech32m.Encode("abc", ""));
         }
 
         [TestCase(1000)]
@@ -66,9 +67,7 @@ namespace pa193_bech32m_tests
         [TestCase(1_000_001)]
         public void ReturnsNonZeroLengthStringForLongInput(int length)
         {
-            var result = Bech32m.Encode("abc", new string('a', length));
-            Assert.IsNotNull(result);
-            Assert.IsNotEmpty(result);
+            StringAssert.HasNonZeroLength(Bech32m.Encode("abc", new string('a', length)));
         }
 
         /** ************** **/

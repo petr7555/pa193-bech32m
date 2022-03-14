@@ -15,9 +15,7 @@ namespace pa193_bech32m_tests
         [Ignore("Decode not implemented yet")]
         public void DecodeReturnsNonZeroLengthStringWhenInputIsValid(string input)
         {
-            var result = Bech32m.Decode(input);
-            Assert.IsNotNull(result);
-            Assert.IsNotEmpty(result);
+            StringAssert.HasNonZeroLength(Bech32m.Decode(input));
         }
 
         [TestCase("\x20" + "1nwldj5")]

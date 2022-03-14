@@ -100,6 +100,14 @@ namespace pa193_bech32m
             return true;
         }
 
+        /// <summary>
+        /// Encodes hrp and input data into Bech32 string.
+        /// </summary>
+        /// <param name="hrp">Human-readable part - string consisting of 1 to 83 US-ASCII characters,
+        /// with each character having a value in the range [33-126]</param>
+        /// <param name="input">String of any length (including zero length) in hexadecimal format.</param>
+        /// 
+        /// <returns></returns>
         public static string Encode(string hrp, string input)
         {
             if (!IsValidHrp(hrp) || !IsValidInput(input))
