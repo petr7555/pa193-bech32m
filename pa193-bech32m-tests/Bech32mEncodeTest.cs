@@ -60,7 +60,6 @@ namespace pa193_bech32m_tests
 
         [TestCase(1000)]
         [TestCase(1_000_000)]
-        [TestCase(1_000_001)]
         public void ReturnsNonZeroLengthStringForLongInput(int length)
         {
             StringAssert.HasNonZeroLength(Bech32m.Encode("abc", new string('a', length)));
@@ -127,6 +126,15 @@ namespace pa193_bech32m_tests
         public void ReturnsEmptyStringWhenInputIsNotInHexFormat(string input)
         {
             Assert.IsEmpty(Bech32m.Encode("abc", input));
+        }
+        
+        [TestCase('z', 1000)]
+        [TestCase('z', 1_000_000)]
+        [TestCase('a', 1001)]
+        [TestCase('a', 1_000_001)]
+        public void ReturnsEmptyStringWhenLongInputIsNotInHexFormat(char c, int length)
+        {
+            Assert.IsEmpty(Bech32m.Encode("abc", new string(c, length)));
         }
     }
 }
