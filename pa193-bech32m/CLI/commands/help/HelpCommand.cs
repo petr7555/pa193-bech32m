@@ -14,7 +14,8 @@ namespace pa193_bech32m.CLI.commands.help
         }
 
         public string Name() => "help";
-        public string Description() => "help [command]           display help for command";
+        public string Flags() => "help [command]";
+        public string Description() => "display help for command";
 
         public int Execute(string[] args)
         {

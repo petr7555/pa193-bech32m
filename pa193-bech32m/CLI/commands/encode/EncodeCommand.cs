@@ -59,7 +59,7 @@ namespace pa193_bech32m.CLI.commands.encode
             Console.WriteLine("Arguments:");
             foreach (var argument in Arguments)
             {
-                Console.WriteLine($"  {argument.Description()}");
+                Console.WriteLine($"  {argument.Flags().PadRight(25, ' ')}{argument.Description()}");
             }
 
             Console.WriteLine();
@@ -71,7 +71,8 @@ namespace pa193_bech32m.CLI.commands.encode
         }
 
         public string Name() => "encode";
-        public string Description() => "encode [options] <data>  encode hrp and data into Bech32m string";
+        public string Flags() => "encode [options] <data>";
+        public string Description() => "encode hrp and data into Bech32m string";
 
         public int Execute(string[] args)
         {

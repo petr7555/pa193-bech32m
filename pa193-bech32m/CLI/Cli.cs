@@ -47,7 +47,7 @@ namespace pa193_bech32m.CLI
             Console.WriteLine("Commands:");
             foreach (var command in Commands)
             {
-                Console.WriteLine($"  {command.Description()}");
+                Console.WriteLine($"  {command.Flags().PadRight(25, ' ')}{command.Description()}");
             }
         }
 
