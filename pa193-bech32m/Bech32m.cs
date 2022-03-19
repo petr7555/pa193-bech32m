@@ -89,7 +89,7 @@ namespace pa193_bech32m
             {
                 return false;
             }
-            
+
             if (input.Length % 2 == 1)
             {
                 return false;
@@ -106,7 +106,7 @@ namespace pa193_bech32m
         }
 
         /// <summary>
-        /// Encodes hrp and input data into Bech32 string.
+        /// Encodes hrp and input data into Bech32m string.
         /// </summary>
         /// <param name="hrp">Human-readable part - string consisting of 1 to 83 US-ASCII characters,
         /// with each character having a value in the range [33-126]</param>
@@ -128,9 +128,9 @@ namespace pa193_bech32m
             return result;
         }
 
-        public static string Decode(string input)
+        public static (string, string) Decode(string input)
         {
-            return "";
+            return ("", "");
         }
     }
 }
