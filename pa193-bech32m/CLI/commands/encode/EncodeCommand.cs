@@ -10,7 +10,7 @@ namespace pa193_bech32m.CLI.commands.encode
     {
         private static readonly IArgument[] Arguments =
         {
-            new DataArgument(),
+            new DataArgument()
         };
 
         private static readonly (IOption option, bool required)[] Options =
@@ -22,7 +22,34 @@ namespace pa193_bech32m.CLI.commands.encode
             (new HelpOption(PrintUsage), false)
         };
 
-        
+        private static bool IsValidOption(string arg)
+        {
+            return Options.Any(optionPair => optionPair.option.IsValidOption(arg));
+        }
+
+        private static IOption GetOption(string arg)
+        {
+            return Options.First(optionPair => optionPair.option.IsValidOption(arg)).option;
+        }
+
+        private static bool HasRequiredOptions(string[] args)
+        {
+            return Options.All(optionPair =>
+            {
+                var (option, required) = optionPair;
+                return !required || args.Any(arg => option.IsValidOption(arg));
+            });
+        }
+
+        private static IOption GetFirstMissingOption(string[] args)
+        {
+            return Options.First(optionPair =>
+            {
+                var (option, required) = optionPair;
+                return required && args.All(arg => !option.IsValidOption(arg));
+            }).option;
+        }
+
         public static void PrintUsage()
         {
             Console.WriteLine("Usage: bech32m encode [options] <data>");
@@ -34,6 +61,7 @@ namespace pa193_bech32m.CLI.commands.encode
             {
                 Console.WriteLine($"  {argument.Description()}");
             }
+
             Console.WriteLine();
             Console.WriteLine("Options:");
             foreach (var (option, _) in Options)
@@ -41,39 +69,9 @@ namespace pa193_bech32m.CLI.commands.encode
                 Console.WriteLine($"  {option.Flags().PadRight(25, ' ')}{option.Description()}");
             }
         }
-        
+
         public string Name() => "encode";
-
         public string Description() => "encode [options] <data>  encode hrp and data into Bech32m string";
-
-        private static bool IsValidOption(string arg)
-        {
-            return Options.Any(optionPair => optionPair.option.IsValidOption(arg));
-        }
-
-        private static IOption GetOption(string arg)
-        {
-            return Options.First(optionPair => optionPair.option.IsValidOption(arg)).option;
-        }
-        
-        private static bool HasRequiredOptions(string[] args)
-        {
-            return Options.All(optionPair =>
-            {
-                var (option, required) = optionPair;
-                return !required || args.Any(arg => option.IsValidOption(arg));
-            });
-        }
-        
-        private static IOption GetFirstMissingOption(string[] args)
-        {
-            return Options.First(optionPair =>
-            {
-                var (option, required) = optionPair;
-                return required && args.All(arg => !option.IsValidOption(arg));
-            }).option;
-        }
-
 
         public int Execute(string[] args)
         {
@@ -84,7 +82,7 @@ namespace pa193_bech32m.CLI.commands.encode
             //     return Cli.ExitFailure;
             // }
             // Console.WriteLine(args);
-            
+
             var arg = args[0];
 
             if (Cli.IsOption(arg))
@@ -98,7 +96,7 @@ namespace pa193_bech32m.CLI.commands.encode
                 // PrintError($"unknown option '{arg}'");
                 // return ExitFailure;
             }
-            
+
             return Cli.ExitSuccess;
         }
     }

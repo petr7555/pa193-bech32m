@@ -30,12 +30,7 @@ namespace pa193_bech32m.CLI
         {
             Console.SetOut(output);
         }
-
-        public static void PrintError(string error)
-        {
-            Console.WriteLine($"error: {error}");
-        }
-
+        
         private static void PrintUsage()
         {
             Console.WriteLine("Usage: bech32m [options] [command]");
@@ -56,8 +51,6 @@ namespace pa193_bech32m.CLI
             }
         }
 
-        public static bool IsOption(string arg) => arg.StartsWith("-") || arg.StartsWith("--");
-
         private static bool IsValidOption(string arg)
         {
             return Options.Any(option => option.IsValidOption(arg));
@@ -72,6 +65,13 @@ namespace pa193_bech32m.CLI
         {
             return Commands.Any(command => command.Name() == arg);
         }
+
+        public static void PrintError(string error)
+        {
+            Console.WriteLine($"error: {error}");
+        }
+        
+        public static bool IsOption(string arg) => arg.StartsWith("-") || arg.StartsWith("--");
 
         public int Run(string[] args)
         {
