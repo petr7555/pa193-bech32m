@@ -36,14 +36,16 @@ namespace pa193_bech32m.CLI.commands.encode
         }
 
 
-        public void Execute(string[] args)
+        public int Execute(string[] args)
         {
             if (!HasRequiredOptions(args))
             {
                 var option = GetFirstMissingOption(args);
-                Cli.ExitWithError($"required option '{option.Flags()}' not specified");
+                Cli.PrintError($"required option '{option.Flags()}' not specified");
+                return Cli.ExitFailure;
             }
             Console.WriteLine(args);
+            return Cli.ExitSuccess;
         }
     }
 }

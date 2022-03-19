@@ -5,10 +5,10 @@ namespace pa193_bech32m
 {
     internal static class Program
     {
-        private static void Main(string[] args)
+        private static int Main(string[] args)
         {
             var cli = new Cli(Console.Out);
-            cli.Run(args);
+            return cli.Run(args);
         }
     }
 }

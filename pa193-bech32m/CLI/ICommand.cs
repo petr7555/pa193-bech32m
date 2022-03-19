@@ -4,6 +4,6 @@ namespace pa193_bech32m.CLI
     {
         public string Name();
         public string Description();
-        public void Execute(string[] args);
+        public int Execute(string[] args);
     }
 }

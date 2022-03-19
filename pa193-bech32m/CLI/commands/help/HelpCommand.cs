@@ -8,7 +8,7 @@ namespace pa193_bech32m.CLI.commands.help
 
         public string Description() => "help [command]           display help for command";
 
-        public void Execute(string[] args)
+        public int Execute(string[] args)
         {
             throw new NotImplementedException();
         }

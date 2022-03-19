@@ -9,6 +9,8 @@ namespace pa193_bech32m.CLI
 {
     public class Cli
     {
+        public const int ExitSuccess = 0;
+        public const int ExitFailure = 1;
         private const string Version = "0.0.1";
         private const string Description = "Bech32m encoder and decoder";
 
@@ -29,10 +31,9 @@ namespace pa193_bech32m.CLI
             Console.SetOut(output);
         }
 
-        public static void ExitWithError(string error)
+        public static void PrintError(string error)
         {
             Console.WriteLine($"error: {error}");
-            Environment.Exit(1);
         }
 
         private static void PrintUsage()
@@ -72,12 +73,12 @@ namespace pa193_bech32m.CLI
             return Commands.Any(command => command.Name() == arg);
         }
 
-        public void Run(string[] args)
+        public int Run(string[] args)
         {
             if (args.Length == 0)
             {
                 PrintUsage();
-                Environment.Exit(1);
+                return ExitFailure;
             }
 
             foreach (var arg in args)
@@ -91,7 +92,8 @@ namespace pa193_bech32m.CLI
                     }
                     else
                     {
-                        ExitWithError($"unknown option '{arg}'");
+                        PrintError($"unknown option '{arg}'");
+                        return ExitFailure;
                     }
                 }
                 else if (IsValidCommand(arg))
@@ -100,9 +102,12 @@ namespace pa193_bech32m.CLI
                 }
                 else
                 {
-                    ExitWithError($"unknown command '{arg}'");
+                    PrintError($"unknown command '{arg}'");
+                    return ExitFailure;
                 }
             }
+
+            return ExitSuccess;
 
             // CLI interface
             // should be hard to misuse
