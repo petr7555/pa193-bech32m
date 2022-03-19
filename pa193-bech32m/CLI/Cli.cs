@@ -14,10 +14,12 @@ namespace pa193_bech32m.CLI
         private const string Version = "0.0.1";
         private const string Description = "Bech32m encoder and decoder";
 
+        private static readonly IOption HelpOption = new HelpOption(PrintUsage);
+            
         private static readonly IOption[] Options =
         {
             new VersionOption(Version),
-            new HelpOption(PrintUsage)
+            HelpOption
         };
 
         private static readonly ICommand[] Commands =
@@ -51,6 +53,11 @@ namespace pa193_bech32m.CLI
             }
         }
 
+        private static bool ContainsHelp(string[] args)
+        {
+            return args.Any(arg => HelpOption.IsValidOption(arg));
+        }
+        
         private static bool IsValidOption(string arg)
         {
             return Options.Any(option => option.IsValidOption(arg));
@@ -80,8 +87,14 @@ namespace pa193_bech32m.CLI
                 PrintUsage();
                 return ExitFailure;
             }
-
+            
             var arg = args[0];
+
+            if (!IsValidCommand(arg) && ContainsHelp(args))
+            {
+                return HelpOption.Execute();
+            }
+            
 
             if (IsOption(arg))
             {

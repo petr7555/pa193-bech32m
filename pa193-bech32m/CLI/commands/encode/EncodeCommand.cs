@@ -13,15 +13,22 @@ namespace pa193_bech32m.CLI.commands.encode
             new DataArgument()
         };
 
+        private static readonly IOption HelpOption = new HelpOption(PrintUsage);
+
         private static readonly (IOption option, bool required)[] Options =
         {
             (new HrpOption(), true),
             (new FormatOption(), false),
             (new InputFileOption(), true),
             (new OutputFileOption(), true),
-            (new HelpOption(PrintUsage), false)
+            (HelpOption, false)
         };
 
+        private static bool ContainsHelp(string[] args)
+        {
+            return args.Any(arg => HelpOption.IsValidOption(arg));
+        }
+        
         private static bool IsValidOption(string arg)
         {
             return Options.Any(optionPair => optionPair.option.IsValidOption(arg));
@@ -76,13 +83,17 @@ namespace pa193_bech32m.CLI.commands.encode
 
         public int Execute(string[] args)
         {
-            // if (!HasRequiredOptions(args))
-            // {
-            //     var option = GetFirstMissingOption(args);
-            //     Cli.PrintError($"required option '{option.Flags()}' not specified");
-            //     return Cli.ExitFailure;
-            // }
-            // Console.WriteLine(args);
+            if (ContainsHelp(args))
+            {
+                return HelpOption.Execute();
+            }
+            
+            if (!HasRequiredOptions(args))
+            {
+                var option = GetFirstMissingOption(args);
+                Cli.PrintError($"required option '{option.Flags()}' not specified");
+                return Cli.ExitFailure;
+            }
 
             var arg = args[0];
 

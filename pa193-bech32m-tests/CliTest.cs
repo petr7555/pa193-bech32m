@@ -62,6 +62,13 @@ Options:
         {
             Assert.AreEqual((CliUsage, 0), Run(helpFlag));
         }
+        
+        [TestCase("-h")]
+        [TestCase("--help")]
+        public void PrintsUsageAndExitsWithZeroWhenHelpFlagPassedAnywhereButNotAfterValidCommand(string helpFlag)
+        {
+            Assert.AreEqual((CliUsage, 0), Run("foo", "--bar", helpFlag, "baz"));
+        }
 
         [Test]
         public void PrintsUsageAndExitsWithZeroOnHelpCommandWithoutArguments()
@@ -88,6 +95,13 @@ Options:
             Assert.AreEqual((EncodeUsage, 0), Run("encode", helpFlag));
         }
         
+        [TestCase("-h")]
+        [TestCase("--help")]
+        public void PrintsUsageOfEncodeCommandAndExitsWithZeroWhenHelpFlagPassedAnywhereAfterEncode(string helpFlag)
+        {
+            Assert.AreEqual((EncodeUsage, 0), Run("encode", "foo", "--bar", helpFlag, "baz"));
+        }
+        
         [Test]
         public void PrintsUsageOfEncodeCommandAndExitsWithZeroWhenEncodePassedAsArgumentToHelp()
         {
@@ -105,6 +119,12 @@ Options:
         {
             Assert.AreEqual(("error: unknown option '--foo'\n", 1), Run("--foo"));
             Assert.AreEqual(("error: unknown option '-f'\n", 1), Run("-f"));
+        }        
+        
+        [Test]
+        public void PrintsRequiredOptionNotSpecifiedAndExitsWithOneWhenEncodeCalledWithoutHrp()
+        {
+            Assert.AreEqual(("error: required option '--hrp <hrp>' not specified\n", 1), Run("encode"));
         }
     }
 }
