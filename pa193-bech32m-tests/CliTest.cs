@@ -10,11 +10,12 @@ namespace pa193_bech32m_tests
         private static (string, int) Run(params string[] args)
         {
             var outMemoryStream = new MemoryStream();
-            using var outStreamWriter = new StreamWriter(outMemoryStream);
-            
-            var cli = new Cli(outStreamWriter);
-            var exitCode = cli.Run(args);
-            
+            int exitCode;
+            using (var outStreamWriter = new StreamWriter(outMemoryStream))
+            {
+                var cli = new Cli(outStreamWriter);
+                exitCode = cli.Run(args);
+            }
             return (Encoding.Default.GetString(outMemoryStream.ToArray()), exitCode);
         }
 
@@ -42,8 +43,8 @@ Commands:
   help [command]           display help for command
 ";
             Assert.AreEqual((expected, 0), Run(helpFlag));
-        }     
-        
+        }
+
         [Test]
         public void PrintsUsageAndExitsWithOneWhenNothingPassed()
         {
