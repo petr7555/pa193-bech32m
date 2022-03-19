@@ -23,7 +23,7 @@ namespace pa193_bech32m.CLI
         private static readonly ICommand[] Commands =
         {
             new EncodeCommand(),
-            new HelpCommand()
+            new HelpCommand(PrintUsage)
         };
 
         public Cli(TextWriter output)

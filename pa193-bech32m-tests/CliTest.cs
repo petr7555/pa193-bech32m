@@ -7,6 +7,19 @@ namespace pa193_bech32m_tests
 {
     public class CliTest
     {
+        private const string Usage = @"Usage: bech32m [options] [command]
+
+Bech32m encoder and decoder
+
+Options:
+  -V, --version            output the version number
+  -h, --help               display help for command
+
+Commands:
+  encode [options] <data>  encode hrp and data into Bech32m string
+  help [command]           display help for command
+";
+
         private static (string, int) Run(params string[] args)
         {
             var outMemoryStream = new MemoryStream();
@@ -16,6 +29,7 @@ namespace pa193_bech32m_tests
                 var cli = new Cli(outStreamWriter);
                 exitCode = cli.Run(args);
             }
+
             return (Encoding.Default.GetString(outMemoryStream.ToArray()), exitCode);
         }
 
@@ -30,37 +44,19 @@ namespace pa193_bech32m_tests
         [TestCase("--help")]
         public void PrintsUsageAndExitsWithZeroOnHelpFlag(string helpFlag)
         {
-            const string expected = @"Usage: bech32m [options] [command]
+            Assert.AreEqual((Usage, 0), Run(helpFlag));
+        }
 
-Bech32m encoder and decoder
-
-Options:
-  -V, --version            output the version number
-  -h, --help               display help for command
-
-Commands:
-  encode [options] <data>  encode hrp and data into Bech32m string
-  help [command]           display help for command
-";
-            Assert.AreEqual((expected, 0), Run(helpFlag));
+        [Test]
+        public void PrintsUsageAndExitsWithZeroOnHelpCommandWithoutArguments()
+        {
+            Assert.AreEqual((Usage, 0), Run("help"));
         }
 
         [Test]
         public void PrintsUsageAndExitsWithOneWhenNothingPassed()
         {
-            const string expected = @"Usage: bech32m [options] [command]
-
-Bech32m encoder and decoder
-
-Options:
-  -V, --version            output the version number
-  -h, --help               display help for command
-
-Commands:
-  encode [options] <data>  encode hrp and data into Bech32m string
-  help [command]           display help for command
-";
-            Assert.AreEqual((expected, 1), Run());
+            Assert.AreEqual((Usage, 1), Run());
         }
     }
 }
