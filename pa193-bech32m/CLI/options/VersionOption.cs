@@ -15,9 +15,10 @@ namespace pa193_bech32m.CLI.options
         public string Flags() => "-V, --version";
         public bool IsValidOption(string arg) => arg == "-V" || arg == "--version";
 
-        public void Execute()
+        public int Execute()
         {
             Console.WriteLine(_version);
+            return Cli.ExitSuccess;
         }
     }
 }

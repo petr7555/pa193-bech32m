@@ -23,7 +23,7 @@ namespace pa193_bech32m.CLI
         private static readonly ICommand[] Commands =
         {
             new EncodeCommand(),
-            new HelpCommand(PrintUsage)
+            new HelpCommand(PrintUsage, EncodeCommand.PrintUsage)
         };
 
         public Cli(TextWriter output)
@@ -56,7 +56,7 @@ namespace pa193_bech32m.CLI
             }
         }
 
-        private static bool IsOption(string arg) => arg.StartsWith("-") || arg.StartsWith("--");
+        public static bool IsOption(string arg) => arg.StartsWith("-") || arg.StartsWith("--");
 
         private static bool IsValidOption(string arg)
         {
@@ -81,33 +81,27 @@ namespace pa193_bech32m.CLI
                 return ExitFailure;
             }
 
-            foreach (var arg in args)
+            var arg = args[0];
+
+            if (IsOption(arg))
             {
-                if (IsOption(arg))
+                if (IsValidOption(arg))
                 {
-                    if (IsValidOption(arg))
-                    {
-                        var option = GetOption(arg);
-                        option.Execute();
-                    }
-                    else
-                    {
-                        PrintError($"unknown option '{arg}'");
-                        return ExitFailure;
-                    }
+                    var option = GetOption(arg);
+                    return option.Execute();
                 }
-                else if (IsValidCommand(arg))
-                {
-                    Commands.First(command => command.Name() == arg).Execute(args[1..]);
-                }
-                else
-                {
-                    PrintError($"unknown command '{arg}'");
-                    return ExitFailure;
-                }
+
+                PrintError($"unknown option '{arg}'");
+                return ExitFailure;
             }
 
-            return ExitSuccess;
+            if (IsValidCommand(arg))
+            {
+                return Commands.First(command => command.Name() == arg).Execute(args[1..]);
+            }
+
+            PrintError($"unknown command '{arg}'");
+            return ExitFailure;
 
             // CLI interface
             // should be hard to misuse

@@ -7,7 +7,7 @@ namespace pa193_bech32m_tests
 {
     public class CliTest
     {
-        private const string Usage = @"Usage: bech32m [options] [command]
+        private const string CliUsage = @"Usage: bech32m [options] [command]
 
 Bech32m encoder and decoder
 
@@ -19,6 +19,22 @@ Commands:
   encode [options] <data>  encode hrp and data into Bech32m string
   help [command]           display help for command
 ";
+
+        private const string EncodeUsage = @"Usage: bech32m encode [options] <data>
+
+encode hrp and data into Bech32m string
+
+Arguments:
+  data                     data to encode
+
+Options:
+  --hrp <hrp>              human-readable part
+  -f, --format <format>    format of input data (choices: ""hex"", ""base64"", ""binary"", default: ""hex"")
+  -i, --input <inputfile>  input file with data
+  -o, --out <outputfile>   output file where result will be saved
+  -h, --help               display help for command
+";
+
 
         private static (string, int) Run(params string[] args)
         {
@@ -44,19 +60,51 @@ Commands:
         [TestCase("--help")]
         public void PrintsUsageAndExitsWithZeroOnHelpFlag(string helpFlag)
         {
-            Assert.AreEqual((Usage, 0), Run(helpFlag));
+            Assert.AreEqual((CliUsage, 0), Run(helpFlag));
         }
 
         [Test]
         public void PrintsUsageAndExitsWithZeroOnHelpCommandWithoutArguments()
         {
-            Assert.AreEqual((Usage, 0), Run("help"));
+            Assert.AreEqual((CliUsage, 0), Run("help"));
+        }        
+        
+        [Test]
+        public void PrintsUsageAndExitsWithOneOnHelpCommandWithUnknownArgument()
+        {
+            Assert.AreEqual((CliUsage, 1), Run("help", "foo"));
         }
 
         [Test]
         public void PrintsUsageAndExitsWithOneWhenNothingPassed()
         {
-            Assert.AreEqual((Usage, 1), Run());
+            Assert.AreEqual((CliUsage, 1), Run());
+        }
+
+        [TestCase("-h")]
+        [TestCase("--help")]
+        public void PrintsUsageOfEncodeCommandAndExitsWithZeroWhenHelpFlagPassedAfterEncode(string helpFlag)
+        {
+            Assert.AreEqual((EncodeUsage, 0), Run("encode", helpFlag));
+        }
+        
+        [Test]
+        public void PrintsUsageOfEncodeCommandAndExitsWithZeroWhenEncodePassedAsArgumentToHelp()
+        {
+            Assert.AreEqual((EncodeUsage, 0), Run("help", "encode"));
+        }      
+        
+        [Test]
+        public void PrintsUnknownCommandAndExitsWithOneWhenPassedUnknownCommand()
+        {
+            Assert.AreEqual(("error: unknown command 'foo'\n", 1), Run("foo"));
+        }        
+        
+        [Test]
+        public void PrintsUnknownOptionAndExitsWithOneWhenPassedUnknownOption()
+        {
+            Assert.AreEqual(("error: unknown option '--foo'\n", 1), Run("--foo"));
+            Assert.AreEqual(("error: unknown option '-f'\n", 1), Run("-f"));
         }
     }
 }
