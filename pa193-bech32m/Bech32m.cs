@@ -74,19 +74,24 @@ namespace pa193_bech32m
             return result;
         }
 
-        private static bool IsValidHrp(string hrp)
+        public static (bool isValid, string errorMsg) ValidateHrp(string hrp)
         {
-            if (string.IsNullOrEmpty(hrp) || hrp.Length > 83)
+            if (string.IsNullOrEmpty(hrp))
             {
-                return false;
+                return (false, "hrp must not be empty");
+            }
+
+            if (hrp.Length > 83)
+            {
+                return (false, "hrp must not be longer than 83 characters");
             }
 
             if (hrp.Any(c => c < 33 || c > 126))
             {
-                return false;
+                return (false, "hrp contains invalid characters");
             }
 
-            return true;
+            return (true, "");
         }
 
         private static bool IsValidInput(string input)
@@ -121,7 +126,7 @@ namespace pa193_bech32m
         /// <returns></returns>
         public static string Encode(string hrp, string input)
         {
-            if (!IsValidHrp(hrp) || !IsValidInput(input))
+            if (!ValidateHrp(hrp).isValid || !IsValidInput(input))
             {
                 return "";
             }

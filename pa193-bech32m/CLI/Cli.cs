@@ -67,11 +67,6 @@ namespace pa193_bech32m.CLI
             return args.Any(arg => HelpOption.IsValidOption(arg));
         }
 
-        private static bool IsValidOption(string arg)
-        {
-            return Options.Any(option => option.IsValidOption(arg));
-        }
-
         private static IOption GetOption(string arg)
         {
             return Options.First(option => option.IsValidOption(arg));

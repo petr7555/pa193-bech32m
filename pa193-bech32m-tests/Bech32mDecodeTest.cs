@@ -12,8 +12,9 @@ namespace pa193_bech32m_tests
         [TestCase("a1lqfn3a", "a", "")]
         [TestCase("an83characterlonghumanreadablepartthatcontainsthetheexcludedcharactersbioandnumber11sg7hg6",
             "an83characterlonghumanreadablepartthatcontainsthetheexcludedcharactersbioandnumber1", "")]
-        [TestCase("abcdef1l7aum6echk45nj3s0wdvt2fg8x9yrzpqzd3ryx", "abcdef", "ffbbcdeb38bdab49ca307b9ac5a928398a418820")]
-        [TestCase("split1checkupstagehandshakeupstreamerranterredcaperredlc445v","split",
+        [TestCase("abcdef1l7aum6echk45nj3s0wdvt2fg8x9yrzpqzd3ryx", "abcdef",
+            "ffbbcdeb38bdab49ca307b9ac5a928398a418820")]
+        [TestCase("split1checkupstagehandshakeupstreamerranterredcaperredlc445v", "split",
             "c5f38b70305f519bf66d85fb6cf03058f3dde463ecd7918f2dc743918f2d")]
         [TestCase("?1v759aa", "?", "")]
         // Binary input of 410 '1's gets padded to 410 '1's and 6 '0's to be divisible by 8 (and therefore hex-encodable).
@@ -26,12 +27,12 @@ namespace pa193_bech32m_tests
         // which is padded by 6 '0's to be representable by hex-string ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc0.  
         // In reference python implementation: `bech32_decode("11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllludsr8")`.
         [TestCase("11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllqq4dt6ek", "1",
-            "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc0")]  
+            "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc0")]
         [TestCase("11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllludsr8", "1",
             "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc0")]
         public void DecodesValidInput(string input, string expectedHrp, string expectedData)
         {
-            var ( hrp, data) = Bech32m.Decode(input);
+            var (hrp, data) = Bech32m.Decode(input);
             Assert.AreEqual(expectedHrp, hrp);
             Assert.AreEqual(expectedData, data);
             Assert.AreEqual(input, Bech32m.Encode(hrp, data));
@@ -68,7 +69,7 @@ namespace pa193_bech32m_tests
         [TestCase("bc1gmk9yu")]
         public void DecodeReturnsEmptyStringsWhenInputIsInvalid(string input)
         {
-            var ( hrp, data) = Bech32m.Decode(input);
+            var (hrp, data) = Bech32m.Decode(input);
             Assert.IsEmpty(hrp);
             Assert.IsEmpty(data);
         }

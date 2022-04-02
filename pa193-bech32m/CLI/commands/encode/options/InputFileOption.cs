@@ -1,5 +1,3 @@
-using System;
-
 namespace pa193_bech32m.CLI.commands.encode.options
 {
     public class InputFileOption : IOption

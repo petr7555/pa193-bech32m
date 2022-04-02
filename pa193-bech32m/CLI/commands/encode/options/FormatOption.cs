@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 
 namespace pa193_bech32m.CLI.commands.encode.options
@@ -9,7 +8,7 @@ namespace pa193_bech32m.CLI.commands.encode.options
         public string Flags() => "-f, --format <format>";
 
         public string Description() =>
-            $"format of input data (choices: {string.Join(", ", _choices.Select(choice => $"\"{choice}\""))}, default: \"hex\")";
+            $"format of input and output (choices: {string.Join(", ", _choices.Select(choice => $"\"{choice}\""))}, default: \"hex\")";
 
         public bool IsValidOption(string arg) => arg == "-f" || arg == "--format";
         public bool HasArgument() => true;

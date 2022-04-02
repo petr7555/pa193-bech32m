@@ -15,14 +15,18 @@ namespace pa193_bech32m.CLI.commands.encode
             new DataArgument()
         };
 
+        private static readonly IOption HrpOption = new HrpOption();
+        private static readonly IOption FormatOption = new FormatOption();
+        private static readonly IOption InputFileOption = new InputFileOption();
+        private static readonly IOption OutputFileOption = new OutputFileOption();
         private static readonly IOption HelpOption = new HelpOption(PrintUsage);
 
         private static readonly (IOption option, bool required)[] Options =
         {
-            (new HrpOption(), true),
-            (new FormatOption(), false),
-            (new InputFileOption(), false),
-            (new OutputFileOption(), false),
+            (HrpOption, true),
+            (FormatOption, false),
+            (InputFileOption, false),
+            (OutputFileOption, false),
             (HelpOption, false)
         };
 
@@ -118,8 +122,7 @@ namespace pa193_bech32m.CLI.commands.encode
          * 1) Verify correctness of passed options
          * 2) Check if any required options are missing
          * 3) Check that there are no unknown options
-         * 4) Check if any arguments are missing
-         * 5) Encode
+         * 4) Encode
          */
         public int Execute(string[] args)
         {
@@ -192,38 +195,47 @@ namespace pa193_bech32m.CLI.commands.encode
                 return Cli.ExitFailure;
             }
 
-            if (!options.ContainsKey("input") && ArgumentIsMissing(arguments))
+            // hrp
+            var hrp = options[HrpOption.Key()];
+            var (isValid, errorMsg) = Bech32m.ValidateHrp(hrp);
+            if (!isValid)
             {
-                Cli.PrintError($"missing required argument '{GetMissingArgument(arguments)}'");
+                Cli.PrintError(errorMsg);
                 return Cli.ExitFailure;
             }
 
+            // get input data
             string data;
-            if (options.ContainsKey("input"))
+            if (options.ContainsKey(InputFileOption.Key()))
             {
-                data = File.ReadAllText(options["input"]);
+                data = File.ReadAllText(options[InputFileOption.Key()]);
             }
-            else
+            else if (arguments.Count > 0)
             {
                 data = arguments[0];
             }
-
-
-            var encodedString = Bech32m.Encode(options["hrp"], data);
-
-            if (options.ContainsKey("output"))
+            else
             {
-                File.WriteAllText(options["output"], encodedString);
+                // using (var reader = new StreamReader(Console.OpenStandardInput()))
+                // {
+                //     data = reader.ReadToEnd();
+                // }
+                data = "";
+            }
+
+            // TODO validate input data
+
+            var encodedString = Bech32m.Encode(hrp, data);
+
+            // output result
+            if (options.ContainsKey(OutputFileOption.Key()))
+            {
+                File.WriteAllText(options[OutputFileOption.Key()], encodedString);
             }
             else
             {
                 Console.WriteLine(encodedString);
             }
-
-            // Console.WriteLine("arguments:");
-            // Console.WriteLine(string.Join("\n", arguments));
-            // Console.WriteLine("options");
-            // Console.WriteLine(string.Join("\n", options.Select(pair => $"{pair.Key}: {pair.Value}")));
 
             return Cli.ExitSuccess;
         }

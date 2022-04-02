@@ -28,7 +28,9 @@ namespace pa193_bech32m_tests
         [TestCase("0",
             "1111111111222222222233333333334444444444555555555566666666667777777777888888888899999999990000000000",
             "01zyg3zyg3yg3zyg3zxvenxveng3zyg3zy24242424venxvenxwamhwamh3zyg3zygnxvenxveqqqqqqqqx7f72k")]
-        [TestCase("1", "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc0", "11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllqq4dt6ek")]
+        [TestCase("1",
+            "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc0",
+            "11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllqq4dt6ek")]
         public void EncodesNonEmptyHrpWithInput(string hrp, string input, string expected)
         {
             Assert.AreEqual(expected, Bech32m.Encode(hrp, input));
