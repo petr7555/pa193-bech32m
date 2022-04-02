@@ -14,6 +14,7 @@ namespace pa193_bech32m.CLI.options
         public string Flags() => "-V, --version";
         public string Description() => "output the version number";
         public bool IsValidOption(string arg) => arg == "-V" || arg == "--version";
+        public bool HasArgument() => false;
 
         public int Execute()
         {

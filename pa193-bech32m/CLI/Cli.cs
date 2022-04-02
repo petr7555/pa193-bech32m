@@ -15,7 +15,7 @@ namespace pa193_bech32m.CLI
         private const string Description = "Bech32m encoder and decoder";
 
         private static readonly IOption HelpOption = new HelpOption(PrintUsage);
-            
+
         private static readonly IOption[] Options =
         {
             new VersionOption(Version),
@@ -32,7 +32,7 @@ namespace pa193_bech32m.CLI
         {
             Console.SetOut(output);
         }
-        
+
         private static void PrintUsage()
         {
             Console.WriteLine("Usage: bech32m [options] [command]");
@@ -57,7 +57,7 @@ namespace pa193_bech32m.CLI
         {
             return args.Any(arg => HelpOption.IsValidOption(arg));
         }
-        
+
         private static bool IsValidOption(string arg)
         {
             return Options.Any(option => option.IsValidOption(arg));
@@ -73,11 +73,24 @@ namespace pa193_bech32m.CLI
             return Commands.Any(command => command.Name() == arg);
         }
 
+        private static bool HasUnknownOptions(string[] args)
+        {
+            return args.Where(IsOption).Any(passedOption =>
+                !Options.Any(validOption => validOption.IsValidOption(passedOption)));
+        }
+
+        private static string GetFirstUnknownOption(string[] args)
+        {
+            return args.Where(IsOption).First(passedOption =>
+                !Options.Any(validOption => validOption.IsValidOption(passedOption)));
+        }
+
+        /** PUBLIC INTERFACE **/
         public static void PrintError(string error)
         {
             Console.WriteLine($"error: {error}");
         }
-        
+
         public static bool IsOption(string arg) => arg.StartsWith("-") || arg.StartsWith("--");
 
         public int Run(string[] args)
@@ -87,30 +100,30 @@ namespace pa193_bech32m.CLI
                 PrintUsage();
                 return ExitFailure;
             }
-            
+
             var arg = args[0];
-
-            if (!IsValidCommand(arg) && ContainsHelp(args))
-            {
-                return HelpOption.Execute();
-            }
-            
-
-            if (IsOption(arg))
-            {
-                if (IsValidOption(arg))
-                {
-                    var option = GetOption(arg);
-                    return option.Execute();
-                }
-
-                PrintError($"unknown option '{arg}'");
-                return ExitFailure;
-            }
 
             if (IsValidCommand(arg))
             {
                 return Commands.First(command => command.Name() == arg).Execute(args[1..]);
+            }
+
+            if (ContainsHelp(args))
+            {
+                return HelpOption.Execute();
+            }
+
+            if (HasUnknownOptions(args))
+            {
+                var option = GetFirstUnknownOption(args);
+                PrintError($"unknown option '{option}'");
+                return ExitFailure;
+            }
+
+            if (IsOption(arg))
+            {
+                var option = GetOption(arg);
+                return option.Execute();
             }
 
             PrintError($"unknown command '{arg}'");

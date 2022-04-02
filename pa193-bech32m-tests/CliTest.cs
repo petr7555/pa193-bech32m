@@ -62,7 +62,7 @@ Options:
         {
             Assert.AreEqual((CliUsage, 0), Run(helpFlag));
         }
-        
+
         [TestCase("-h")]
         [TestCase("--help")]
         public void PrintsUsageAndExitsWithZeroWhenHelpFlagPassedAnywhereButNotAfterValidCommand(string helpFlag)
@@ -74,8 +74,8 @@ Options:
         public void PrintsUsageAndExitsWithZeroOnHelpCommandWithoutArguments()
         {
             Assert.AreEqual((CliUsage, 0), Run("help"));
-        }        
-        
+        }
+
         [Test]
         public void PrintsUsageAndExitsWithOneOnHelpCommandWithUnknownArgument()
         {
@@ -94,37 +94,98 @@ Options:
         {
             Assert.AreEqual((EncodeUsage, 0), Run("encode", helpFlag));
         }
-        
+
         [TestCase("-h")]
         [TestCase("--help")]
         public void PrintsUsageOfEncodeCommandAndExitsWithZeroWhenHelpFlagPassedAnywhereAfterEncode(string helpFlag)
         {
             Assert.AreEqual((EncodeUsage, 0), Run("encode", "foo", "--bar", helpFlag, "baz"));
         }
-        
+
         [Test]
         public void PrintsUsageOfEncodeCommandAndExitsWithZeroWhenEncodePassedAsArgumentToHelp()
         {
             Assert.AreEqual((EncodeUsage, 0), Run("help", "encode"));
-        }      
-        
+        }
+
         [Test]
         public void PrintsUnknownCommandAndExitsWithOneWhenPassedUnknownCommand()
         {
             Assert.AreEqual(("error: unknown command 'foo'\n", 1), Run("foo"));
-        }        
-        
+        }
+
         [Test]
         public void PrintsUnknownOptionAndExitsWithOneWhenPassedUnknownOption()
         {
             Assert.AreEqual(("error: unknown option '--foo'\n", 1), Run("--foo"));
             Assert.AreEqual(("error: unknown option '-f'\n", 1), Run("-f"));
-        }        
-        
+        }
+
         [Test]
         public void PrintsRequiredOptionNotSpecifiedAndExitsWithOneWhenEncodeCalledWithoutHrp()
         {
             Assert.AreEqual(("error: required option '--hrp <hrp>' not specified\n", 1), Run("encode"));
+        }
+
+        [Test]
+        public void PrintsOptionArgumentMissingAndExitsWithOneWhenEncodeCalledWithHrpOptionWithoutHrpArgument()
+        {
+            Assert.AreEqual(("error: option '--hrp <hrp>' argument missing\n", 1), Run("encode", "--hrp"));
+        }
+
+        [Test]
+        public void OptionLikeArgumentIsConsideredValidArgumentForHrpOption()
+        {
+            Assert.AreEqual(("--format1zths4ad7ku\n", 0), Run("encode", "--hrp", "--format", "12ef"));
+            Assert.AreEqual(("-f1zthsw2s0yj\n", 0), Run("encode", "--hrp", "-f", "12ef"));
+        }
+
+        [Test]
+        public void
+            PrintsMissingRequiredArgumentAndExitsWithOneWhenEncodeCalledWithHrpOptionAndHrpArgumentButWithoutData()
+        {
+            Assert.AreEqual(("error: missing required argument 'data'\n", 1), Run("encode", "--hrp", "abc"));
+        }
+
+        [Test]
+        public void
+            PrintsEncodedStringAndExitsWithZeroWhenEncodeCalledWithHrpOptionAndHrpArgumentAndWithHexDataBeforeOrAfterHrpOption()
+        {
+            Assert.AreEqual(("abc1zths84d6rg\n", 0), Run("encode", "12ef", "--hrp", "abc"));
+            Assert.AreEqual(("abc1zths84d6rg\n", 0), Run("encode", "--hrp", "abc", "12ef"));
+        }
+
+        [Test]
+        public void PrintsEncodedStringAndExitsWithZeroWhenEncodeCalledWithHrpOptionAndHrpArgumentAndWithHexData()
+        {
+            Assert.AreEqual(("abc1zths84d6rg\n", 0), Run("encode", "--hrp", "abc", "12ef"));
+        }
+
+        [Test]
+        public void PrintsInvalidInputAndExitsWithOneWhenEncodeCalledWithHrpOptionAndHrpArgumentAndWithNonHexData()
+        {
+            Assert.AreEqual(("error: invalid input\n", 1), Run("encode", "--hrp", "abc", "xy"));
+        }
+
+        [Test]
+        public void PrintsUnknownOptionAndExitsWithOneWhenEncodeCalledWithUnknownOption()
+        {
+            Assert.AreEqual(("error: unknown option '--bar'\n", 1), Run("encode", "--hrp", "abc", "12ef", "--bar"));
+            Assert.AreEqual(("error: unknown option '-b'\n", 1), Run("encode", "--hrp", "abc", "12ef", "-b"));
+        }
+
+        [Test]
+        public void IgnoresOtherArgumentsWhenAllNecessaryParametersForEncodeAreProvided()
+        {
+            Assert.AreEqual(("abc1zths84d6rg\n", 0), Run("encode", "--hrp", "abc", "12ef", "xy", "ab"));
+        }
+
+        [Test]
+        public void PrintsInvalidArgumentAndExitsWithOneWhenEncodeCalledWithFormatOptionAndInvalidFormatArgument()
+        {
+            Assert.AreEqual(
+                ("error: option '-f, --format <format>' argument 'base10' is invalid. Allowed choices are hex, base64, binary.\n",
+                    1), Run("encode", "--format", "base10"));
         }
     }
 }

@@ -14,6 +14,7 @@ namespace pa193_bech32m.CLI.options
         public string Flags() => "-h, --help";
         public string Description() => "display help for command";
         public bool IsValidOption(string arg) => arg == "-h" || arg == "--help";
+        public bool HasArgument() => false;
 
         public int Execute()
         {

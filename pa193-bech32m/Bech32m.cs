@@ -49,6 +49,12 @@ namespace pa193_bech32m
             return result;
         }
 
+        private static string PadRightWithZerosToMultipleOf(string inputInBinary, int multiple)
+        {
+            return inputInBinary.PadRight(
+                Convert.ToInt32(multiple * Math.Ceiling(inputInBinary.Length / (float) multiple)), '0');
+        }
+
         private static List<int> ConvertToBase32(string input)
         {
             var inputInBinary = string.Join(string.Empty, input.Select(
@@ -56,7 +62,7 @@ namespace pa193_bech32m
                 )
             );
 
-            inputInBinary = inputInBinary.PadRight(Convert.ToInt32(5 * Math.Ceiling(inputInBinary.Length / 5.0)), '0');
+            inputInBinary = PadRightWithZerosToMultipleOf(inputInBinary, 5);
             var result = new List<int>();
             for (var i = 0; i < inputInBinary.Length; i += 5)
             {

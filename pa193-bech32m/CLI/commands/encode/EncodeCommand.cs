@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using pa193_bech32m.CLI.commands.encode.arguments;
 using pa193_bech32m.CLI.commands.encode.options;
@@ -19,8 +20,8 @@ namespace pa193_bech32m.CLI.commands.encode
         {
             (new HrpOption(), true),
             (new FormatOption(), false),
-            (new InputFileOption(), true),
-            (new OutputFileOption(), true),
+            (new InputFileOption(), false),
+            (new OutputFileOption(), false),
             (HelpOption, false)
         };
 
@@ -28,7 +29,7 @@ namespace pa193_bech32m.CLI.commands.encode
         {
             return args.Any(arg => HelpOption.IsValidOption(arg));
         }
-        
+
         private static bool IsValidOption(string arg)
         {
             return Options.Any(optionPair => optionPair.option.IsValidOption(arg));
@@ -57,6 +58,23 @@ namespace pa193_bech32m.CLI.commands.encode
             }).option;
         }
 
+        private static bool HasUnknownOptions(string[] args)
+        {
+            return args.Where(Cli.IsOption).Any(passedOption =>
+                !Options.Any(validOptionPair => validOptionPair.option.IsValidOption(passedOption)));
+        }
+
+        private static string GetFirstUnknownOption(string[] args)
+        {
+            return args.Where(Cli.IsOption).First(passedOption =>
+                !Options.Any(validOptionPair => validOptionPair.option.IsValidOption(passedOption)));
+        }
+
+        private static bool OptionHasNeededArgument(IOption option, string[] args)
+        {
+            return option.HasArgument() && args.Length >= 1;
+        }
+
         public static void PrintUsage()
         {
             Console.WriteLine("Usage: bech32m encode [options] <data>");
@@ -81,13 +99,69 @@ namespace pa193_bech32m.CLI.commands.encode
         public string Flags() => "encode [options] <data>";
         public string Description() => "encode hrp and data into Bech32m string";
 
+        /**
+         * 1) Verify correctness of passed options
+         * 2) Check if any required options are missing
+         * 3) Check that there are no unknown options
+         * 4) Check if any arguments are missing
+         */
         public int Execute(string[] args)
         {
             if (ContainsHelp(args))
             {
                 return HelpOption.Execute();
             }
-            
+
+
+            var arguments = new List<string>();
+            var options = new Dictionary<string, string>();
+
+            var argsCopy = args;
+            while (argsCopy.Length > 0)
+            {
+                var arg = argsCopy[0];
+                argsCopy = argsCopy[1..];
+
+                if (Cli.IsOption(arg))
+                {
+                    if (IsValidOption(arg))
+                    {
+                        var option = GetOption(arg);
+                        if (option.HasArgument())
+                        {
+                            if (argsCopy.Length > 0)
+                            {
+                                var optionArgument = argsCopy[0];
+                                argsCopy = argsCopy[1..];
+
+                                if (!option.IsValidArgument(optionArgument))
+                                {
+                                    Cli.PrintError(
+                                        $"option '{option.Flags()}' argument '{optionArgument}' is invalid. {option.AllowedArgumentHint()}");
+                                    return Cli.ExitFailure;
+                                }
+
+                                options[option.Key()] = optionArgument;
+                            }
+                            else
+                            {
+                                Cli.PrintError($"option '{option.Flags()}' argument missing");
+                                return Cli.ExitFailure;
+                            }
+                        }
+
+                        // Otherwise option is a flag option.
+                        // There are no flag options for EncodeCommand, therefore this branch is not implemented.
+                    }
+
+                    // Ignore invalid options for now, they are checked later.
+                }
+                else
+                {
+                    arguments.Add(arg);
+                }
+            }
+
             if (!HasRequiredOptions(args))
             {
                 var option = GetFirstMissingOption(args);
@@ -95,19 +169,26 @@ namespace pa193_bech32m.CLI.commands.encode
                 return Cli.ExitFailure;
             }
 
-            var arg = args[0];
-
-            if (Cli.IsOption(arg))
+            if (HasUnknownOptions(args))
             {
-                if (IsValidOption(arg))
-                {
-                    var option = GetOption(arg);
-                    return option.Execute();
-                }
-
-                // PrintError($"unknown option '{arg}'");
-                // return ExitFailure;
+                var option = GetFirstUnknownOption(args);
+                Cli.PrintError($"unknown option '{option}'");
+                return Cli.ExitFailure;
             }
+
+            if (arguments.Count < Arguments.Length)
+            {
+                var missingArgument = Arguments[arguments.Count].Flags();
+                Cli.PrintError($"missing required argument '{missingArgument}'");
+                return Cli.ExitFailure;
+            }
+
+            Console.WriteLine(Bech32m.Encode(options["hrp"], arguments[0]));
+
+            // Console.WriteLine("arguments:");
+            // Console.WriteLine(string.Join("\n", arguments));
+            // Console.WriteLine("options");
+            // Console.WriteLine(string.Join("\n", options.Select(pair => $"{pair.Key}: {pair.Value}")));
 
             return Cli.ExitSuccess;
         }
