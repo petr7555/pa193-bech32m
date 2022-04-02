@@ -51,16 +51,28 @@ Options:
             return (Encoding.Default.GetString(outMemoryStream.ToArray()), exitCode);
         }
 
-        [SetUp]
-        public void Init()
+        [OneTimeSetUp]
+        public void BeforeAll()
         {
             File.WriteAllText(TestInputFile, "12ef");
         }
         
-        [TearDown]
-        public void Cleanup()
+        [OneTimeTearDown]
+        public void AfterAll()
         {
             File.Delete(TestInputFile);
+        }
+        
+        [SetUp]
+        public void BeforeEach()
+        {
+            Assert.False(File.Exists(TestOutputFile));
+        }       
+        
+        [TearDown]
+        public void AfterEach()
+        {
+            File.Delete(TestOutputFile);
         }
 
         [TestCase("-V")]
