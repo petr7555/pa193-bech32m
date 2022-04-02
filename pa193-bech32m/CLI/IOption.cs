@@ -1,3 +1,5 @@
+using System;
+
 namespace pa193_bech32m.CLI
 {
     public interface IOption
@@ -9,7 +11,6 @@ namespace pa193_bech32m.CLI
         public string Key() => "";
         public bool IsValidArgument(string arg) => true;
         public string AllowedArgumentHint() => "";
-
-        public int Execute();
+        public int Execute() => throw new NotImplementedException();
     }
 }

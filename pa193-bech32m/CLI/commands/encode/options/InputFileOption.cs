@@ -9,10 +9,5 @@ namespace pa193_bech32m.CLI.commands.encode.options
         public bool IsValidOption(string arg) => arg == "-i" || arg == "--input";
         public bool HasArgument() => true;
         public string Key() => "input";
-
-        public int Execute()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

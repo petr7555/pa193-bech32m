@@ -16,10 +16,5 @@ namespace pa193_bech32m.CLI.commands.encode.options
 
         // TODO hrp hint
         public string AllowedArgumentHint() => "";
-
-        public int Execute()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

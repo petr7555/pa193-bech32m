@@ -28,6 +28,13 @@ namespace pa193_bech32m.CLI
             new HelpCommand(PrintUsage, EncodeCommand.PrintUsage)
         };
 
+        private static int GetPadding()
+        {
+            var allFlags = Commands.Select(arg => arg.Flags()).ToList();
+            allFlags.AddRange(Options.Select(option => option.Flags()));
+            return allFlags.Max(flag => flag.Length) + 2;
+        }
+
         public Cli(TextWriter output)
         {
             Console.SetOut(output);
@@ -35,6 +42,8 @@ namespace pa193_bech32m.CLI
 
         private static void PrintUsage()
         {
+            var padding = GetPadding();
+
             Console.WriteLine("Usage: bech32m [options] [command]");
             Console.WriteLine();
             Console.WriteLine(Description);
@@ -42,14 +51,14 @@ namespace pa193_bech32m.CLI
             Console.WriteLine("Options:");
             foreach (var option in Options)
             {
-                Console.WriteLine($"  {option.Flags().PadRight(25, ' ')}{option.Description()}");
+                Console.WriteLine($"  {option.Flags().PadRight(padding, ' ')}{option.Description()}");
             }
 
             Console.WriteLine();
             Console.WriteLine("Commands:");
             foreach (var command in Commands)
             {
-                Console.WriteLine($"  {command.Flags().PadRight(25, ' ')}{command.Description()}");
+                Console.WriteLine($"  {command.Flags().PadRight(padding, ' ')}{command.Description()}");
             }
         }
 

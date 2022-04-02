@@ -25,16 +25,18 @@ Commands:
 encode hrp and data into Bech32m string
 
 Arguments:
-  data                     data to encode
+  data                       data to encode, required if ""--input"" is not specified
 
 Options:
-  --hrp <hrp>              human-readable part
-  -f, --format <format>    format of input data (choices: ""hex"", ""base64"", ""binary"", default: ""hex"")
-  -i, --input <inputfile>  input file with data
-  -o, --out <outputfile>   output file where result will be saved
-  -h, --help               display help for command
+  --hrp <hrp>                human-readable part
+  -f, --format <format>      format of input data (choices: ""hex"", ""base64"", ""binary"", default: ""hex"")
+  -i, --input <inputfile>    input file with data
+  -o, --output <outputfile>  output file where result will be saved. If not present, result is printed to stdout.
+  -h, --help                 display help for command
 ";
 
+        private const string TestInputFile = "test_input_file";
+        private const string TestOutputFile = "test_output_file";
 
         private static (string, int) Run(params string[] args)
         {
@@ -47,6 +49,18 @@ Options:
             }
 
             return (Encoding.Default.GetString(outMemoryStream.ToArray()), exitCode);
+        }
+
+        [SetUp]
+        public void Init()
+        {
+            File.WriteAllText(TestInputFile, "12ef");
+        }
+        
+        [TearDown]
+        public void Cleanup()
+        {
+            File.Delete(TestInputFile);
         }
 
         [TestCase("-V")]
@@ -142,9 +156,16 @@ Options:
 
         [Test]
         public void
-            PrintsMissingRequiredArgumentAndExitsWithOneWhenEncodeCalledWithHrpOptionAndHrpArgumentButWithoutData()
+            PrintsMissingRequiredArgumentAndExitsWithOneWhenEncodeCalledWithHrpOptionAndHrpArgumentButWithoutDataAndWithoutInputFile()
         {
             Assert.AreEqual(("error: missing required argument 'data'\n", 1), Run("encode", "--hrp", "abc"));
+        }
+
+        [Test]
+        public void
+            PrintsEncodedStringAndExitsWithZeroWhenEncodeCalledWithValidHrpAndInputFileAndWithoutData()
+        {
+            Assert.AreEqual(("abc1zths84d6rg\n", 0), Run("encode", "--hrp", "abc", "--input", TestInputFile));
         }
 
         [Test]
@@ -153,6 +174,12 @@ Options:
         {
             Assert.AreEqual(("abc1zths84d6rg\n", 0), Run("encode", "12ef", "--hrp", "abc"));
             Assert.AreEqual(("abc1zths84d6rg\n", 0), Run("encode", "--hrp", "abc", "12ef"));
+        }
+
+        [Test]
+        public void PrintsEncodedStringAndExitsWithZeroWhenHrpIsValidAndDataAreBetweenOptions()
+        {
+            Assert.AreEqual(("abc1zths84d6rg\n", 0), Run("encode", "--format", "hex", "12ef", "--hrp", "abc"));
         }
 
         [Test]
@@ -181,11 +208,26 @@ Options:
         }
 
         [Test]
+        public void
+            IgnoresOtherArgumentsWhenAllNecessaryParametersForEncodeAreProvidedInputParamTakesPrecedenceBeforePassedData()
+        {
+            Assert.AreEqual(("abc1zths84d6rg\n", 0),
+                Run("encode", "--hrp", "abc", "xy", "--input", TestInputFile, "ab"));
+        }
+
+        [Test]
         public void PrintsInvalidArgumentAndExitsWithOneWhenEncodeCalledWithFormatOptionAndInvalidFormatArgument()
         {
             Assert.AreEqual(
                 ("error: option '-f, --format <format>' argument 'base10' is invalid. Allowed choices are hex, base64, binary.\n",
                     1), Run("encode", "--format", "base10"));
+        }
+        
+        [Test]
+        public void SavesEncodedStringAndExitsWithZeroWhenEncodeCalledWithValidHrpAndOutputFile()
+        {
+            Assert.AreEqual(("", 0), Run("encode", "--hrp", "abc", "--output", TestOutputFile, "12ef"));
+            Assert.AreEqual("abc1zths84d6rg", File.ReadAllText(TestOutputFile));
         }
     }
 }

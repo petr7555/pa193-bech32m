@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using pa193_bech32m.CLI.commands.encode.arguments;
 using pa193_bech32m.CLI.commands.encode.options;
@@ -70,13 +71,27 @@ namespace pa193_bech32m.CLI.commands.encode
                 !Options.Any(validOptionPair => validOptionPair.option.IsValidOption(passedOption)));
         }
 
-        private static bool OptionHasNeededArgument(IOption option, string[] args)
+        private static bool ArgumentIsMissing(List<string> args)
         {
-            return option.HasArgument() && args.Length >= 1;
+            return args.Count < Arguments.Length;
+        }
+
+        private static string GetMissingArgument(List<string> args)
+        {
+            return Arguments[args.Count].Flags();
+        }
+
+        private static int GetPadding()
+        {
+            var allFlags = Arguments.Select(arg => arg.Flags()).ToList();
+            allFlags.AddRange(Options.Select(entry => entry.option.Flags()));
+            return allFlags.Max(flag => flag.Length) + 2;
         }
 
         public static void PrintUsage()
         {
+            var padding = GetPadding();
+
             Console.WriteLine("Usage: bech32m encode [options] <data>");
             Console.WriteLine();
             Console.WriteLine("encode hrp and data into Bech32m string");
@@ -84,14 +99,14 @@ namespace pa193_bech32m.CLI.commands.encode
             Console.WriteLine("Arguments:");
             foreach (var argument in Arguments)
             {
-                Console.WriteLine($"  {argument.Flags().PadRight(25, ' ')}{argument.Description()}");
+                Console.WriteLine($"  {argument.Flags().PadRight(padding, ' ')}{argument.Description()}");
             }
 
             Console.WriteLine();
             Console.WriteLine("Options:");
             foreach (var (option, _) in Options)
             {
-                Console.WriteLine($"  {option.Flags().PadRight(25, ' ')}{option.Description()}");
+                Console.WriteLine($"  {option.Flags().PadRight(padding, ' ')}{option.Description()}");
             }
         }
 
@@ -104,6 +119,7 @@ namespace pa193_bech32m.CLI.commands.encode
          * 2) Check if any required options are missing
          * 3) Check that there are no unknown options
          * 4) Check if any arguments are missing
+         * 5) Encode
          */
         public int Execute(string[] args)
         {
@@ -176,14 +192,33 @@ namespace pa193_bech32m.CLI.commands.encode
                 return Cli.ExitFailure;
             }
 
-            if (arguments.Count < Arguments.Length)
+            if (!options.ContainsKey("input") && ArgumentIsMissing(arguments))
             {
-                var missingArgument = Arguments[arguments.Count].Flags();
-                Cli.PrintError($"missing required argument '{missingArgument}'");
+                Cli.PrintError($"missing required argument '{GetMissingArgument(arguments)}'");
                 return Cli.ExitFailure;
             }
 
-            Console.WriteLine(Bech32m.Encode(options["hrp"], arguments[0]));
+            string data;
+            if (options.ContainsKey("input"))
+            {
+                data = File.ReadAllText(options["input"]);
+            }
+            else
+            {
+                data = arguments[0];
+            }
+
+
+            var encodedString = Bech32m.Encode(options["hrp"], data);
+
+            if (options.ContainsKey("output"))
+            {
+                File.WriteAllText(options["output"], encodedString);
+            }
+            else
+            {
+                Console.WriteLine(encodedString);
+            }
 
             // Console.WriteLine("arguments:");
             // Console.WriteLine(string.Join("\n", arguments));

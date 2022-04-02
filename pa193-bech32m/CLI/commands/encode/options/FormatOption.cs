@@ -16,10 +16,5 @@ namespace pa193_bech32m.CLI.commands.encode.options
         public string Key() => "format";
         public bool IsValidArgument(string arg) => _choices.Contains(arg);
         public string AllowedArgumentHint() => $"Allowed choices are {string.Join(", ", _choices)}.";
-
-        public int Execute()
-        {
-            throw new NotImplementedException();
-        }
     }
 }
