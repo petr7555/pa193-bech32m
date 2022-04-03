@@ -1,5 +1,4 @@
-﻿using System;
-using pa193_bech32m.CLI;
+﻿using pa193_bech32m.CLI;
 
 namespace pa193_bech32m
 {
@@ -7,7 +6,7 @@ namespace pa193_bech32m
     {
         private static int Main(string[] args)
         {
-            var cli = new Cli(Console.Out);
+            var cli = new Cli();
             return cli.Run(args);
         }
     }

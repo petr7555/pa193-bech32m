@@ -94,7 +94,7 @@ namespace pa193_bech32m
             return (true, "");
         }
 
-        private static bool IsValidInput(string input)
+        public static bool IsValidHexInput(string input)
         {
             if (input is null)
             {
@@ -126,7 +126,7 @@ namespace pa193_bech32m
         /// <returns></returns>
         public static string Encode(string hrp, string input)
         {
-            if (!ValidateHrp(hrp).isValid || !IsValidInput(input))
+            if (!ValidateHrp(hrp).isValid || !IsValidHexInput(input))
             {
                 return "";
             }

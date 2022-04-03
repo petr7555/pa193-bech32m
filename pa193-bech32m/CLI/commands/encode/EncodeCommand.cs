@@ -10,13 +10,20 @@ namespace pa193_bech32m.CLI.commands.encode
 {
     public class EncodeCommand : ICommand
     {
+        private Stream _inputStream;
+
+        public EncodeCommand(Stream inputStream)
+        {
+            _inputStream = inputStream;
+        }
+
         private static readonly IArgument[] Arguments =
         {
             new DataArgument()
         };
 
         private static readonly IOption HrpOption = new HrpOption();
-        private static readonly IOption FormatOption = new FormatOption();
+        private static readonly FormatOption FormatOption = new();
         private static readonly IOption InputFileOption = new InputFileOption();
         private static readonly IOption OutputFileOption = new OutputFileOption();
         private static readonly IOption HelpOption = new HelpOption(PrintUsage);
@@ -195,7 +202,7 @@ namespace pa193_bech32m.CLI.commands.encode
                 return Cli.ExitFailure;
             }
 
-            // hrp
+            /* hrp */
             var hrp = options[HrpOption.Key()];
             var (isValid, errorMsg) = Bech32m.ValidateHrp(hrp);
             if (!isValid)
@@ -204,28 +211,132 @@ namespace pa193_bech32m.CLI.commands.encode
                 return Cli.ExitFailure;
             }
 
-            // get input data
-            string data;
+            var format = options.GetValueOrDefault(FormatOption.Key(), FormatOption.Hex);
+
+            /* data */
+            string dataInHex;
+
             if (options.ContainsKey(InputFileOption.Key()))
             {
-                data = File.ReadAllText(options[InputFileOption.Key()]);
+                var inputFileName = options[InputFileOption.Key()];
+                // TODO add test for this
+                if (!File.Exists(inputFileName))
+                {
+                    Cli.PrintError($"input file {inputFileName} does not exist");
+                    return Cli.ExitFailure;
+                }
+
+                switch (format)
+                {
+                    case FormatOption.Binary:
+                        dataInHex = Convert.ToHexString(File.ReadAllBytes(inputFileName));
+                        break;
+                    case FormatOption.Hex:
+                        dataInHex = File.ReadAllText(inputFileName);
+                        if (!Bech32m.IsValidHexInput(dataInHex))
+                        {
+                            Cli.PrintError("data are not in hex format");
+                            return Cli.ExitFailure;
+                        }
+
+                        break;
+                    case FormatOption.Base64:
+                        try
+                        {
+                            dataInHex = Convert.ToHexString(Convert.FromBase64String(File.ReadAllText(inputFileName)));
+                        }
+                        catch (FormatException)
+                        {
+                            Cli.PrintError("data are not in base64 format");
+                            return Cli.ExitFailure;
+                        }
+
+                        break;
+                    default:
+                        throw new ArgumentException("invalid format");
+                }
             }
             else if (arguments.Count > 0)
             {
-                data = arguments[0];
+                switch (format)
+                {
+                    case FormatOption.Binary:
+                        Cli.PrintError("binary data cannot be passed as command-line argument");
+                        return Cli.ExitFailure;
+                    case FormatOption.Hex:
+                        dataInHex = arguments[0];
+                        if (!Bech32m.IsValidHexInput(dataInHex))
+                        {
+                            Cli.PrintError("data are not in hex format");
+                            return Cli.ExitFailure;
+                        }
+
+                        break;
+                    case FormatOption.Base64:
+                        try
+                        {
+                            dataInHex = Convert.ToHexString(Convert.FromBase64String(arguments[0]));
+                        }
+                        catch (FormatException)
+                        {
+                            Cli.PrintError("data are not in base64 format");
+                            return Cli.ExitFailure;
+                        }
+
+                        break;
+                    default:
+                        throw new ArgumentException("invalid format");
+                }
             }
             else
             {
-                // using (var reader = new StreamReader(Console.OpenStandardInput()))
-                // {
-                //     data = reader.ReadToEnd();
-                // }
-                data = "";
+                Console.WriteLine($"Enter data in {format} format. Press Enter when done.");
+                switch (format)
+                {
+                    case FormatOption.Binary:
+                        IEnumerable<byte> allBytes = Array.Empty<byte>();
+                        var buffer = new byte[2048];
+                        int bytes;
+                        // var reader = new BinaryReader(stdin);
+                        while ((bytes = _inputStream.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            allBytes = allBytes.Concat(buffer[..bytes]);
+                        }
+
+                        // Convert.ToHexString(allBytes.Concat(buffer[..bytes]).ToArray())
+                        dataInHex = Convert.ToHexString(allBytes.ToArray());
+                        break;
+                    case FormatOption.Hex:
+                        dataInHex = Console.ReadLine();
+                        if (!Bech32m.IsValidHexInput(dataInHex))
+                        {
+                            Cli.PrintError("data are not in hex format");
+                            return Cli.ExitFailure;
+                        }
+
+                        break;
+                    case FormatOption.Base64:
+                        try
+                        {
+                            dataInHex = Convert.ToHexString(Convert.FromBase64String(Console.ReadLine()));
+                        }
+                        catch (FormatException)
+                        {
+                            Cli.PrintError("data are not in base64 format");
+                            return Cli.ExitFailure;
+                        }
+
+                        break;
+                    default:
+                        throw new ArgumentException("invalid format");
+                }
+
+                Console.WriteLine();
             }
 
             // TODO validate input data
 
-            var encodedString = Bech32m.Encode(hrp, data);
+            var encodedString = Bech32m.Encode(hrp, dataInHex);
 
             // output result
             if (options.ContainsKey(OutputFileOption.Key()))
@@ -234,6 +345,7 @@ namespace pa193_bech32m.CLI.commands.encode
             }
             else
             {
+                Console.WriteLine("Result:");
                 Console.WriteLine(encodedString);
             }
 

@@ -14,33 +14,45 @@ namespace pa193_bech32m.CLI
         private const string Version = "0.0.1";
         private const string Description = "Bech32m encoder and decoder";
 
-        private static readonly IOption HelpOption = new HelpOption(PrintUsage);
+        private readonly IOption HelpOption;
 
-        private static readonly IOption[] Options =
-        {
-            new VersionOption(Version),
-            HelpOption
-        };
+        private readonly IOption[] Options;
 
-        private static readonly ICommand[] Commands =
-        {
-            new EncodeCommand(),
-            new HelpCommand(PrintUsage, EncodeCommand.PrintUsage)
-        };
+        private readonly ICommand[] Commands;
 
-        private static int GetPadding()
+        private int GetPadding()
         {
             var allFlags = Commands.Select(arg => arg.Flags()).ToList();
             allFlags.AddRange(Options.Select(option => option.Flags()));
             return allFlags.Max(flag => flag.Length) + 2;
         }
 
-        public Cli(TextWriter output)
+        public Cli(Stream inputStream, Stream outputStream)
         {
-            Console.SetOut(output);
+            // var sr = new StreamReader(inputStream);
+            Console.SetIn(new StreamReader(inputStream));
+            Console.SetOut(new StreamWriter(outputStream) {AutoFlush = true});
+
+            Commands = new ICommand[]
+            {
+                new EncodeCommand(inputStream),
+                new HelpCommand(PrintUsage, EncodeCommand.PrintUsage)
+            };
+
+            HelpOption = new HelpOption(PrintUsage);
+
+            Options = new[]
+            {
+                new VersionOption(Version),
+                HelpOption
+            };
         }
 
-        private static void PrintUsage()
+        public Cli() : this(Console.OpenStandardInput(), Console.OpenStandardOutput())
+        {
+        }
+
+        private void PrintUsage()
         {
             var padding = GetPadding();
 
@@ -62,28 +74,28 @@ namespace pa193_bech32m.CLI
             }
         }
 
-        private static bool ContainsHelp(string[] args)
+        private bool ContainsHelp(string[] args)
         {
             return args.Any(arg => HelpOption.IsValidOption(arg));
         }
 
-        private static IOption GetOption(string arg)
+        private IOption GetOption(string arg)
         {
             return Options.First(option => option.IsValidOption(arg));
         }
 
-        private static bool IsValidCommand(string arg)
+        private bool IsValidCommand(string arg)
         {
             return Commands.Any(command => command.Name() == arg);
         }
 
-        private static bool HasUnknownOptions(string[] args)
+        private bool HasUnknownOptions(string[] args)
         {
             return args.Where(IsOption).Any(passedOption =>
                 !Options.Any(validOption => validOption.IsValidOption(passedOption)));
         }
 
-        private static string GetFirstUnknownOption(string[] args)
+        private string GetFirstUnknownOption(string[] args)
         {
             return args.Where(IsOption).First(passedOption =>
                 !Options.Any(validOption => validOption.IsValidOption(passedOption)));

@@ -20,17 +20,42 @@ Commands:
   help [command]           display help for command
 ";
 
-        public static (string, int) Run(params string[] args)
+        public static (string, int) RunWithInput(string input, params string[] args)
         {
+            var inMemoryStream = new MemoryStream();
             var outMemoryStream = new MemoryStream();
             int exitCode;
-            using (var outStreamWriter = new StreamWriter(outMemoryStream))
+            using (var testStreamWriter = new StreamWriter(inMemoryStream))
             {
-                var cli = new Cli(outStreamWriter);
+                testStreamWriter.WriteLine(input);
+                testStreamWriter.Flush();
+                inMemoryStream.Position = 0;
+
+                var cli = new Cli(inMemoryStream, outMemoryStream);
                 exitCode = cli.Run(args);
             }
 
             return (Encoding.Default.GetString(outMemoryStream.ToArray()), exitCode);
+        }
+
+        public static (string, int) RunWithBinaryInput(byte[] input, params string[] args)
+        {
+            var inMemoryStream = new MemoryStream();
+            var outMemoryStream = new MemoryStream();
+
+            inMemoryStream.Write(input);
+            inMemoryStream.Flush();
+            inMemoryStream.Position = 0;
+
+            var cli = new Cli(inMemoryStream, outMemoryStream);
+            var exitCode = cli.Run(args);
+
+            return (Encoding.Default.GetString(outMemoryStream.ToArray()), exitCode);
+        }
+
+        public static (string, int) Run(params string[] args)
+        {
+            return RunWithInput("", args);
         }
 
         [TestCase("-V")]

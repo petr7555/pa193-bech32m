@@ -15,25 +15,34 @@ Arguments:
 
 Options:
   --hrp <hrp>                human-readable part. Consists of 1–83 ASCII characters in range [33, 126].
-  -f, --format <format>      format of input and output (choices: ""hex"", ""base64"", ""binary"", default: ""hex"")
+  -f, --format <format>      format of input data (choices: ""hex"", ""base64"", ""binary"", default: ""hex"")
   -i, --input <inputfile>    input file with data
   -o, --output <outputfile>  output file where result will be saved. If not present, result is printed to stdout.
   -h, --help                 display help for command
 ";
 
-        private const string TestInputFile = "test_input_file";
+        private const string TestInputHexFile = "test_input_hex_file";
+        private const string TestInputBinaryFile = "test_input_binary_file";
+        private const string TestInputBase64File = "test_input_base64_file";
+        private const string TestInputRandomCharactersFile = "test_input_random_characters_file";
+
         private const string TestOutputFile = "test_output_file";
 
         [OneTimeSetUp]
         public void BeforeAll()
         {
-            File.WriteAllText(TestInputFile, "12ef");
+            File.WriteAllText(TestInputHexFile, "12ef34");
+            File.WriteAllBytes(TestInputBinaryFile, new byte[] {18, 239, 52});
+            File.WriteAllText(TestInputBase64File, "Eu80");
+            File.WriteAllText(TestInputRandomCharactersFile, "xy");
         }
 
         [OneTimeTearDown]
         public void AfterAll()
         {
-            File.Delete(TestInputFile);
+            File.Delete(TestInputHexFile);
+            File.Delete(TestInputBinaryFile);
+            File.Delete(TestInputBase64File);
         }
 
         [SetUp]
@@ -83,51 +92,36 @@ Options:
         [Test]
         public void OptionLikeArgumentIsConsideredValidArgumentForHrpOption()
         {
-            Assert.AreEqual(("--format1zths4ad7ku\n", 0), Run("encode", "--hrp", "--format", "12ef"));
-            Assert.AreEqual(("-f1zthsw2s0yj\n", 0), Run("encode", "--hrp", "-f", "12ef"));
-        }
-
-        [Test]
-        public void
-            PrintsEncodedStringAndExitsWithZeroWhenCalledWithValidHrpAndInputFileAndWithoutData()
-        {
-            Assert.AreEqual(("abc1zths84d6rg\n", 0), Run("encode", "--hrp", "abc", "--input", TestInputFile));
+            Assert.AreEqual(("Result:\n--format1zthngmmh5e5\n", 0), Run("encode", "--hrp", "--format", "12ef34"));
+            Assert.AreEqual(("Result:\n-f1zthngfqlyj9\n", 0), Run("encode", "--hrp", "-f", "12ef34"));
         }
 
         [Test]
         public void IgnoresOtherArgumentsWhenAllNecessaryParametersAreProvided()
         {
-            Assert.AreEqual(("abc1zths84d6rg\n", 0), Run("encode", "--hrp", "abc", "12ef", "xy", "ab"));
-        }
-
-        [TestCase("12ef")]
-        [TestCase("xy")]
-        public void
-            InputParamTakesPrecedenceBeforePassedDataWhichCanEvenBeInvalid(string data)
-        {
-            Assert.AreEqual(("abc1zths84d6rg\n", 0),
-                Run("encode", "--hrp", "abc", data, "--input", TestInputFile));
+            Assert.AreEqual(("Result:\nabc1zthng4l66t2\n", 0), Run("encode", "--hrp", "abc", "12ef34", "xy", "ab"));
         }
 
         [Test]
         public void
             PrintsEncodedStringAndExitsWithZeroWhenCalledWithValidHrpAndWithHexDataBeforeOrAfterHrpOption()
         {
-            Assert.AreEqual(("abc1zths84d6rg\n", 0), Run("encode", "12ef", "--hrp", "abc"));
-            Assert.AreEqual(("abc1zths84d6rg\n", 0), Run("encode", "--hrp", "abc", "12ef"));
+            Assert.AreEqual(("Result:\nabc1zthng4l66t2\n", 0), Run("encode", "12ef34", "--hrp", "abc"));
+            Assert.AreEqual(("Result:\nabc1zthng4l66t2\n", 0), Run("encode", "--hrp", "abc", "12ef34"));
         }
 
         [Test]
         public void PrintsEncodedStringAndExitsWithZeroWhenCalledWithValidHrpAndDataAreBetweenOptions()
         {
-            Assert.AreEqual(("abc1zths84d6rg\n", 0), Run("encode", "--format", "hex", "12ef", "--hrp", "abc"));
+            Assert.AreEqual(("Result:\nabc1zthng4l66t2\n", 0),
+                Run("encode", "--format", "hex", "12ef34", "--hrp", "abc"));
         }
 
         [Test]
         public void PrintsUnknownOptionAndExitsWithOneWhenCalledWithUnknownOption()
         {
-            Assert.AreEqual(("error: unknown option '--bar'\n", 1), Run("encode", "--hrp", "abc", "12ef", "--bar"));
-            Assert.AreEqual(("error: unknown option '-b'\n", 1), Run("encode", "--hrp", "abc", "12ef", "-b"));
+            Assert.AreEqual(("error: unknown option '--bar'\n", 1), Run("encode", "--hrp", "abc", "12ef34", "--bar"));
+            Assert.AreEqual(("error: unknown option '-b'\n", 1), Run("encode", "--hrp", "abc", "12ef34", "-b"));
         }
 
         [Test]
@@ -144,7 +138,7 @@ Options:
         [Test]
         public void PrintsErrorMessageAndExitsWithOneWhenCalledWithEmptyHrp()
         {
-            Assert.AreEqual(("error: hrp must not be empty\n", 1), Run("encode", "--hrp", "", "12ef"));
+            Assert.AreEqual(("error: hrp must not be empty\n", 1), Run("encode", "--hrp", "", "12ef34"));
         }
 
         [TestCase(84)]
@@ -153,7 +147,7 @@ Options:
         public void PrintsErrorMessageAndExitsWithOneWhenCalledWithTooLongHrp(int hrpLength)
         {
             Assert.AreEqual(("error: hrp must not be longer than 83 characters\n", 1),
-                Run("encode", "--hrp", new string('a', hrpLength), "12ef"));
+                Run("encode", "--hrp", new string('a', hrpLength), "12ef34"));
         }
 
         [TestCase("\x20")]
@@ -168,7 +162,7 @@ Options:
         public void PrintsErrorMessageAndExitsWithOneWhenCalledWithHrpContainingInvalidCharacters(string hrp)
         {
             Assert.AreEqual(("error: hrp contains invalid characters\n", 1),
-                Run("encode", "--hrp", hrp, "12ef"));
+                Run("encode", "--hrp", hrp, "12ef34"));
         }
 
         [Test]
@@ -177,10 +171,28 @@ Options:
             Assert.AreEqual(("error: hrp contains invalid characters\n", 1), Run("encode", "--hrp", "\x14", "xy"));
         }
 
-        /** *************** **/
-        /** Data validation **/
-        /** *************** **/
-        // TODO add the same test again but with input from file (or parameterize)
+        /** *********************** **/
+        /** Data passed as argument **/
+        /** *********************** **/
+        [TestCase("hex", "12ef34")]
+        [TestCase("base64", "Eu80")]
+        public void PrintsEncodedStringAndExitsWithZeroWhenEncodeCalledWithValidHrpAndFormatAndDataInGivenFormat(
+            string format, string data)
+        {
+            Assert.AreEqual(("Result:\nabc1zthng4l66t2\n", 0), Run("encode", "--hrp", "abc", "--format", format, data));
+        }
+
+        [TestCase("xy")]
+        [TestCase("12ef34")]
+        [TestCase("Eu80")]
+        [TestCase("0001001011101111")]
+        public void PrintsErrorMessageAndExitsWithOneWhenCalledWithValidHrpAndFormatBinaryAndAnyData(
+            string data)
+        {
+            Assert.AreEqual(("error: binary data cannot be passed as command-line argument\n", 1),
+                Run("encode", "--hrp", "abc", "--format", "binary", data));
+        }
+
         [Test]
         public void PrintsErrorMessageAndExitsWithOneWhenCalledWithValidHrpAndWithNonHexData()
         {
@@ -188,9 +200,8 @@ Options:
         }
 
         [TestCase("xy")]
-        [TestCase("Eu8=")]
-        [TestCase("0001001011101111")]
-        public void PrintsErrorMessageAndExitsWithOneWheCalledWithValidHrpAndFormatHexAndWithNonHexData(
+        [TestCase("Eu80")]
+        public void PrintsErrorMessageAndExitsWithOneWhenCalledWithValidHrpAndFormatHexAndWithNonHexData(
             string data)
         {
             Assert.AreEqual(("error: data are not in hex format\n", 1),
@@ -198,8 +209,7 @@ Options:
         }
 
         [TestCase("xy")]
-        [TestCase("12ef")]
-        [TestCase("0001001011101111")]
+        [TestCase("12ef34")]
         public void PrintsErrorMessageAndExitsWithOneWhenCalledWithValidHrpAndFormatBase64AndWithNonBase64Data(
             string data)
         {
@@ -207,25 +217,123 @@ Options:
                 Run("encode", "--hrp", "abc", "--format", "base64", data));
         }
 
-        [TestCase("xy")]
-        [TestCase("12ef")]
-        [TestCase("Eu8=")]
-        public void PrintsErrorMessageAndExitsWithOneWhenCalledWithValidHrpAndFormatBinaryAndWithNonBinaryData(
-            string data)
+        /** ************************* **/
+        /** Data passed through stdin **/
+        /** ************************* **/
+        [Test]
+        public void ReadsDataFromStdinInHexWhenNeitherInputNorDataAreGiven()
         {
-            Assert.AreEqual(("error: data are not in binary format\n", 1),
-                Run("encode", "--hrp", "abc", "--format", "binary", data));
+            Assert.AreEqual(("Enter data in hex format. Press Enter when done.\n\nResult:\nabc1zthng4l66t2\n", 0),
+                RunWithInput("12ef34", "encode", "--hrp", "abc"));
         }
 
-        // TODO output is not hex but ascii
-        [TestCase("hex", "12ef", "abc1zths84d6rg")]
-        [TestCase("base64", "Eu8=", "YWJjMXp0aHM4NGQ2cmc=")]
-        [TestCase("binary", "0001001011101111",
-            "0110000101100010011000110011000101111010011101000110100001110011001110000011010001100100001101100111001001100111")]
-        public void PrintsEncodedStringAndExitsWithZeroWhenEncodeCalledWithValidHrpAndFormatAndDataInGivenFormat(
-            string format, string data, string expected)
+        [TestCase("hex", "12ef34")]
+        [TestCase("base64", "Eu80")]
+        public void ReadsDataFromStdinInGivenFormatWhenNeitherInputNorDataAreGiven(string format, string data)
         {
-            Assert.AreEqual(($"{expected}\n", 0), Run("encode", "--hrp", "abc", "--format", format, data));
+            Assert.AreEqual(($"Enter data in {format} format. Press Enter when done.\n\nResult:\nabc1zthng4l66t2\n", 0),
+                RunWithInput(data, "encode", "--hrp", "abc", "--format", format));
+        }
+
+        [Test]
+        public void ReadsBinaryDataFromStdinWhenNeitherInputNorDataAreGivenAndBinaryFormatIsSpecified()
+        {
+            Assert.AreEqual(("Enter data in binary format. Press Enter when done.\n\nResult:\nabc1zthng4l66t2\n", 0),
+                RunWithBinaryInput(new byte[] {18, 239, 52}, "encode", "--hrp", "abc", "--format", "binary"));
+        }
+
+        [TestCase("xy")]
+        [TestCase("Eu80")]
+        public void PrintsErrorMessageAndExitsWithOneWhenCalledWithValidHrpAndFormatHexAndWithNonHexStdinData(
+            string data)
+        {
+            Assert.AreEqual(
+                ("Enter data in hex format. Press Enter when done.\nerror: data are not in hex format\n", 1),
+                RunWithInput(data, "encode", "--hrp", "abc", "--format", "hex"));
+        }
+
+        [Test]
+        public void PrintsErrorMessageAndExitsWithOneWhenCalledWithValidHrpAndFormatHexAndWithBinaryStdinData()
+        {
+            Assert.AreEqual(
+                ("Enter data in hex format. Press Enter when done.\nerror: data are not in hex format\n", 1),
+                RunWithBinaryInput(new byte[] {18, 230}, "encode", "--hrp", "abc", "--format", "hex"));
+        }
+
+        [TestCase("xy")]
+        [TestCase("12ef34")]
+        public void PrintsErrorMessageAndExitsWithOneWhenCalledWithValidHrpAndFormatBase64AndWithNonBase64StdinData(
+            string data)
+        {
+            Assert.AreEqual(("error: data are not in base64 format\n", 1),
+                RunWithInput(data, "encode", "--hrp", "abc", "--format", "base64", data));
+        }
+
+        [Test]
+        public void PrintsErrorMessageAndExitsWithOneWhenCalledWithValidHrpAndFormatBase64AndWithBinaryStdinData()
+        {
+            Assert.AreEqual(
+                ("Enter data in base64 format. Press Enter when done.\nerror: data are not in base64 format\n", 1),
+                RunWithBinaryInput(new byte[] {18, 230}, "encode", "--hrp", "abc", "--format", "base64"));
+        }
+
+        /** ****************************** **/
+        /** Data passed through input file **/
+        /** ****************************** **/
+        [Test]
+        public void PrintsEncodedStringAndExitsWithZeroWhenCalledWithValidHrpAndInputFileAndWithoutData()
+        {
+            Assert.AreEqual(("Result:\nabc1zthng4l66t2\n", 0),
+                Run("encode", "--hrp", "abc", "--input", TestInputHexFile));
+        }
+
+        [TestCase("12ef34")]
+        [TestCase("xy")]
+        public void InputParameterTakesPrecedenceBeforePassedDataWhichCanEvenBeInvalid(string data)
+        {
+            Assert.AreEqual(("Result:\nabc1zthng4l66t2\n", 0),
+                Run("encode", "--hrp", "abc", data, "--input", TestInputHexFile));
+        }
+
+        [TestCase("hex", TestInputHexFile)]
+        [TestCase("base64", TestInputBase64File)]
+        [TestCase("binary", TestInputBinaryFile)]
+        public void ReadsDataFromInputFileInGivenFormatWhenInputFileIsGiven(string format, string inputFileName)
+        {
+            Assert.AreEqual(("Result:\nabc1zthng4l66t2\n", 0),
+                Run("encode", "--hrp", "abc", "--format", format, "--input", inputFileName));
+        }
+
+        [TestCase(TestInputBase64File)]
+        [TestCase(TestInputBinaryFile)]
+        [TestCase(TestInputRandomCharactersFile)]
+        public void
+            PrintsErrorMessageAndExitsWithOneWhenCalledWithValidHrpAndFormatHexAndWithInputFileContainingNonHexData(
+                string inputFileName)
+        {
+            Assert.AreEqual(("error: data are not in hex format\n", 1),
+                Run("encode", "--hrp", "abc", "--format", "hex", "--input", inputFileName));
+        }
+
+        [TestCase(TestInputHexFile)]
+        [TestCase(TestInputBinaryFile)]
+        [TestCase(TestInputRandomCharactersFile)]
+        public void
+            PrintsErrorMessageAndExitsWithOneWhenCalledWithValidHrpAndFormatBase64AndWithInputFileContainingNonBase64Data(
+                string inputFileName)
+        {
+            Assert.AreEqual(("error: data are not in base64 format\n", 1),
+                Run("encode", "--hrp", "abc", "--format", "base64", "--input", inputFileName));
+        }
+        // TODo add test for empty binary file
+
+        [TestCase(TestInputHexFile, "abc1xyex2e3nxsjgjava")]
+        [TestCase(TestInputBase64File, "abc1g46nsvqyql3j3")]
+        [TestCase(TestInputRandomCharactersFile, "abc10pusrll0u7")]
+        public void CanReadFileWithAnyContentAsBinaryData(string inputFileName, string expected)
+        {
+            Assert.AreEqual(($"Result:\n{expected}\n", 0),
+                Run("encode", "--hrp", "abc", "--format", "binary", "--input", inputFileName));
         }
 
         /** ****** **/
@@ -233,50 +341,31 @@ Options:
         /** ****** **/
         [Test]
         public void
-            SavesEncodedStringInHexAndExitsWithZeroWhenCalledWithValidHrpAndValidDataAndOutputFileAndWithoutFormatArgument()
+            SavesEncodedStringToOutputFileAndExitsWithZeroWhenCalledWithValidHrpAndValidDataAndOutputFileAndWithoutFormatArgument()
         {
-            Assert.AreEqual(("", 0), Run("encode", "--hrp", "abc", "--output", TestOutputFile, "12ef"));
-            Assert.AreEqual("abc1zths84d6rg", File.ReadAllText(TestOutputFile));
+            Assert.AreEqual(("", 0), Run("encode", "--hrp", "abc", "--output", TestOutputFile, "12ef34"));
+            Assert.AreEqual("abc1zthng4l66t2", File.ReadAllText(TestOutputFile));
+        }
+
+        [TestCase("hex", "12ef34")]
+        [TestCase("base64", "Eu80")]
+        public void
+            SavesEncodedStringToOutputFileAndExitsWithZeroWhenCalledWithValidHrpAndFormatAndDataInGivenFormat(
+                string format, string data)
+        {
+            Assert.AreEqual(("", 0),
+                Run("encode", "--hrp", "abc", "--output", TestOutputFile, data, "--format", format));
+            Assert.AreEqual("abc1zthng4l66t2", File.ReadAllText(TestOutputFile));
         }
 
         [Test]
         public void
-            SavesEncodedStringInHexAndExitsWithZeroWhenCalledWithValidHrpAndValidDataAndOutputFileAndFormatHexArgument()
+            SavesEncodedStringToOutputFileAndExitsWithZeroWhenCalledWithValidHrpAndFormatBinaryAndBinaryStdinData()
         {
-            Assert.AreEqual(("", 0),
-                Run("encode", "--hrp", "abc", "--output", TestOutputFile, "12ef", "--format", "hex"));
-            Assert.AreEqual("abc1zths84d6rg", File.ReadAllText(TestOutputFile));
-        }
-
-        /** ************** **/
-        /** Standard input **/
-        /** ************** **/
-        [Test]
-        public void ReadsDataFromStdinInHexWhenNeitherInputNorDataAreGiven()
-        {
-            // TODO somehow write into stdin
-            Assert.AreEqual(("abc1zths84d6rg\n", 0), Run("encode", "--hrp", "abc"));
-        }
-
-        [TestCase("hex", "12ef", "abc1zths84d6rg")]
-        [TestCase("base64", "Eu8=", "YWJjMXp0aHM4NGQ2cmc=")]
-        [TestCase("binary", "0001001011101111",
-            "0110000101100010011000110011000101111010011101000110100001110011001110000011010001100100001101100111001001100111")]
-        public void ReadsDataFromStdinInGivenFormatWhenNeitherInputNorDataAreGiven(string format, string data,
-            string expected)
-        {
-            // TODO somehow write into stdin
-            Assert.AreEqual(($"{expected}\n", 0), Run("encode", "--hrp", "abc", "--format", format));
-        }
-
-        [Test]
-         public void ReadsBinaryDataFromStdinWhenNeitherInputNorDataAreGivenAndBinaryFormatIsSpecified()
-        {
-            var data = "0001001011101111";
-            // TODO somehow write into stdin
-            Assert.AreEqual(
-                ($"0110000101100010011000110011000101111010011101000110100001110011001110000011010001100100001101100111001001100111\n",
-                    0), Run("encode", "--hrp", "abc", "--format", "binary"));
+            Assert.AreEqual(("Enter data in binary format. Press Enter when done.\n\n", 0),
+                RunWithBinaryInput(new byte[] {18, 239, 52}, "encode", "--hrp", "abc", "--output", TestOutputFile,
+                    "--format", "binary"));
+            Assert.AreEqual("abc1zthng4l66t2", File.ReadAllText(TestOutputFile));
         }
     }
 }
