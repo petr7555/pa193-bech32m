@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using NUnit.Framework;
 using static pa193_bech32m_tests.CliTest;
@@ -25,6 +26,7 @@ Options:
         private const string TestInputBinaryFile = "test_input_binary_file";
         private const string TestInputBase64File = "test_input_base64_file";
         private const string TestInputRandomCharactersFile = "test_input_random_characters_file";
+        private const string TestInputEmptyFile = "test_input_empty_file";
 
         private const string TestOutputFile = "test_output_file";
 
@@ -35,6 +37,7 @@ Options:
             File.WriteAllBytes(TestInputBinaryFile, new byte[] {18, 239, 52});
             File.WriteAllText(TestInputBase64File, "Eu80");
             File.WriteAllText(TestInputRandomCharactersFile, "xy");
+            File.WriteAllText(TestInputEmptyFile, "");
         }
 
         [OneTimeTearDown]
@@ -43,6 +46,8 @@ Options:
             File.Delete(TestInputHexFile);
             File.Delete(TestInputBinaryFile);
             File.Delete(TestInputBase64File);
+            File.Delete(TestInputRandomCharactersFile);
+            File.Delete(TestInputEmptyFile);
         }
 
         [SetUp]
@@ -217,6 +222,14 @@ Options:
                 Run("encode", "--hrp", "abc", "--format", "base64", data));
         }
 
+        [TestCase("hex")]
+        [TestCase("base64")]
+        public void CanReadEmptyDataArgumentInAnyFormat(string format)
+        {
+            Assert.AreEqual(($"Result:\nabc1k7c8sc\n", 0),
+                RunWithInput("", "encode", "--hrp", "abc", "--format", format, ""));
+        }
+
         /** ************************* **/
         /** Data passed through stdin **/
         /** ************************* **/
@@ -277,6 +290,21 @@ Options:
                 RunWithBinaryInput(new byte[] {18, 230}, "encode", "--hrp", "abc", "--format", "base64"));
         }
 
+        [TestCase("hex")]
+        [TestCase("base64")]
+        public void CanReadEmptyStdinInAnyFormat(string format)
+        {
+            Assert.AreEqual(($"Enter data in {format} format. Press Enter when done.\n\nResult:\nabc1k7c8sc\n", 0),
+                RunWithInput("", "encode", "--hrp", "abc", "--format", format));
+        }
+
+        [Test]
+        public void CanReadEmptyStdinInBinaryFormat()
+        {
+            Assert.AreEqual(("Enter data in binary format. Press Enter when done.\n\nResult:\nabc1k7c8sc\n", 0),
+                RunWithBinaryInput(Array.Empty<byte>(), "encode", "--hrp", "abc", "--format", "binary"));
+        }
+
         /** ****************************** **/
         /** Data passed through input file **/
         /** ****************************** **/
@@ -325,7 +353,6 @@ Options:
             Assert.AreEqual(("error: data are not in base64 format\n", 1),
                 Run("encode", "--hrp", "abc", "--format", "base64", "--input", inputFileName));
         }
-        // TODo add test for empty binary file
 
         [TestCase(TestInputHexFile, "abc1xyex2e3nxsjgjava")]
         [TestCase(TestInputBase64File, "abc1g46nsvqyql3j3")]
@@ -334,6 +361,15 @@ Options:
         {
             Assert.AreEqual(($"Result:\n{expected}\n", 0),
                 Run("encode", "--hrp", "abc", "--format", "binary", "--input", inputFileName));
+        }
+
+        [TestCase("hex")]
+        [TestCase("base64")]
+        [TestCase("binary")]
+        public void CanReadEmptyFileInAnyFormat(string format)
+        {
+            Assert.AreEqual(($"Result:\nabc1k7c8sc\n", 0),
+                Run("encode", "--hrp", "abc", "--format", format, "--input", TestInputEmptyFile));
         }
 
         [TestCase("hex")]

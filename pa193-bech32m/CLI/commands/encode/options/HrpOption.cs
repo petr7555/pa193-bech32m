@@ -6,13 +6,6 @@ namespace pa193_bech32m.CLI.commands.encode.options
         public string Description() => "human-readable part. Consists of 1–83 ASCII characters in range [33, 126].";
         public bool IsValidOption(string arg) => arg == "--hrp";
         public bool HasArgument() => true;
-
         public string Key() => "hrp";
-
-        // TODO hrp validation
-        public bool IsValidArgument(string arg) => true;
-
-        // TODO hrp hint
-        public string AllowedArgumentHint() => "";
     }
 }
