@@ -29,7 +29,6 @@ namespace pa193_bech32m.CLI
 
         public Cli(Stream inputStream, Stream outputStream)
         {
-            // var sr = new StreamReader(inputStream);
             Console.SetIn(new StreamReader(inputStream));
             Console.SetOut(new StreamWriter(outputStream) {AutoFlush = true});
 
