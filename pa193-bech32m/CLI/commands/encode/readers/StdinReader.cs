@@ -19,7 +19,7 @@ namespace pa193_bech32m.CLI.commands.encode.readers
         public (bool hasError, string data) ReadString()
         {
             Prompt();
-            var data = Console.ReadLine();
+            var data = Console.ReadLine() ?? "";
             Console.WriteLine();
             return (false, data);
         }
