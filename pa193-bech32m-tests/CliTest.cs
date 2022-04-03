@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Text;
 using NUnit.Framework;
@@ -20,32 +21,12 @@ Commands:
   help [command]           display help for command
 ";
 
-        public static (string, int) RunWithInput(string input, params string[] args)
-        {
-            var inMemoryStream = new MemoryStream();
-            var outMemoryStream = new MemoryStream();
-            int exitCode;
-            using (var testStreamWriter = new StreamWriter(inMemoryStream))
-            {
-                testStreamWriter.WriteLine(input);
-                testStreamWriter.Flush();
-                inMemoryStream.Position = 0;
-
-                var cli = new Cli(inMemoryStream, outMemoryStream);
-                exitCode = cli.Run(args);
-            }
-
-            return (Encoding.Default.GetString(outMemoryStream.ToArray()), exitCode);
-        }
-
-        public static (string, int) RunWithBinaryInput(byte[] input, params string[] args)
+        private static (string, int) RunWithUniversalInput(Action<MemoryStream> writingFn, params string[] args)
         {
             var inMemoryStream = new MemoryStream();
             var outMemoryStream = new MemoryStream();
 
-            inMemoryStream.Write(input);
-            inMemoryStream.Flush();
-            inMemoryStream.Position = 0;
+            writingFn(inMemoryStream);
 
             var cli = new Cli(inMemoryStream, outMemoryStream);
             var exitCode = cli.Run(args);
@@ -53,10 +34,21 @@ Commands:
             return (Encoding.Default.GetString(outMemoryStream.ToArray()), exitCode);
         }
 
-        public static (string, int) Run(params string[] args)
-        {
-            return RunWithInput("", args);
-        }
+        public static (string, int) RunWithInput(string input, params string[] args) =>
+            RunWithUniversalInput(inMemoryStream =>
+            {
+                new StreamWriter(inMemoryStream) {AutoFlush = true}.WriteLine(input);
+                inMemoryStream.Position = 0;
+            }, args);
+
+        public static (string, int) RunWithBinaryInput(byte[] input, params string[] args) =>
+            RunWithUniversalInput(inMemoryStream =>
+            {
+                inMemoryStream.Write(input);
+                inMemoryStream.Position = 0;
+            }, args);
+
+        public static (string, int) Run(params string[] args) => RunWithInput("", args);
 
         [TestCase("-V")]
         [TestCase("--version")]
