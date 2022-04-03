@@ -248,7 +248,7 @@ Options:
             string data)
         {
             Assert.AreEqual(
-                ("Enter data in hex format. Press Enter when done.\nerror: data are not in hex format\n", 1),
+                ("Enter data in hex format. Press Enter when done.\n\nerror: data are not in hex format\n", 1),
                 RunWithInput(data, "encode", "--hrp", "abc", "--format", "hex"));
         }
 
@@ -256,7 +256,7 @@ Options:
         public void PrintsErrorMessageAndExitsWithOneWhenCalledWithValidHrpAndFormatHexAndWithBinaryStdinData()
         {
             Assert.AreEqual(
-                ("Enter data in hex format. Press Enter when done.\nerror: data are not in hex format\n", 1),
+                ("Enter data in hex format. Press Enter when done.\n\nerror: data are not in hex format\n", 1),
                 RunWithBinaryInput(new byte[] {18, 230}, "encode", "--hrp", "abc", "--format", "hex"));
         }
 
@@ -273,7 +273,7 @@ Options:
         public void PrintsErrorMessageAndExitsWithOneWhenCalledWithValidHrpAndFormatBase64AndWithBinaryStdinData()
         {
             Assert.AreEqual(
-                ("Enter data in base64 format. Press Enter when done.\nerror: data are not in base64 format\n", 1),
+                ("Enter data in base64 format. Press Enter when done.\n\nerror: data are not in base64 format\n", 1),
                 RunWithBinaryInput(new byte[] {18, 230}, "encode", "--hrp", "abc", "--format", "base64"));
         }
 
@@ -334,6 +334,16 @@ Options:
         {
             Assert.AreEqual(($"Result:\n{expected}\n", 0),
                 Run("encode", "--hrp", "abc", "--format", "binary", "--input", inputFileName));
+        }
+
+        [TestCase("hex")]
+        [TestCase("base64")]
+        [TestCase("binary")]
+        public void PrintsErrorMessageAndExitsWithOneWhenInputFileDoesNotExistForAnyFormat(string format)
+        {
+            const string nonexistentInputFileName = "nonexistent_file";
+            Assert.AreEqual(($"error: input file {nonexistentInputFileName} does not exist\n", 1),
+                Run("encode", "--hrp", "abc", "--format", format, "--input", nonexistentInputFileName));
         }
 
         /** ****** **/
