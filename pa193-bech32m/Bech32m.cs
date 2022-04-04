@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace pa193_bech32m
 {
-    public class Bech32m
+    public static class Bech32m
     {
         private const string Charset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
         private static readonly int[] Generator = {0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3};

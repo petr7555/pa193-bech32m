@@ -153,7 +153,8 @@ namespace pa193_bech32m.CLI.commands.encode
             }
         }
 
-        public string Name() => "encode";
+        public const string CommandName = "encode";
+        public string Name() => CommandName;
         public string Flags() => "encode [options] <data>";
         public string Description() => "encode hrp and data into Bech32m string";
 

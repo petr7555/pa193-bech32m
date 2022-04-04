@@ -1,4 +1,5 @@
 using System;
+using pa193_bech32m.CLI.commands.encode;
 
 namespace pa193_bech32m.CLI.commands.help
 {
@@ -27,7 +28,7 @@ namespace pa193_bech32m.CLI.commands.help
 
             switch (args[0])
             {
-                case "encode":
+                case EncodeCommand.CommandName:
                     _encodeUsage();
                     return Cli.ExitSuccess;
                 default:
