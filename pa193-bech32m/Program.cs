@@ -2,9 +2,9 @@
 
 namespace pa193_bech32m
 {
-    internal static class Program
+    public static class Program
     {
-        private static int Main(string[] args)
+        public static int Main(string[] args)
         {
             var cli = new Cli();
             return cli.Run(args);
