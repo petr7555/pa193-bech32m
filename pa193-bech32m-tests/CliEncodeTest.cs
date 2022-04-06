@@ -298,6 +298,15 @@ Options:
                 RunWithInput("", "encode", "--hrp", "abc", "--format", format));
         }
 
+        [TestCase("hex")]
+        [TestCase("base64")]
+        [TestCase("binary")]
+        public void HandlesWhenReadLineReturnsNull(string format)
+        {
+            Assert.AreEqual(($"Enter data in {format} format. Press Enter when done.\n\nResult:\nabc1k7c8sc\n", 0),
+                Run("encode", "--hrp", "abc", "--format", format));
+        }
+
         [Test]
         public void CanReadEmptyStdinInBinaryFormat()
         {

@@ -41,14 +41,15 @@ Commands:
                 inMemoryStream.Position = 0;
             }, args);
 
+        public static (string, int) Run(params string[] args) =>
+            RunWithUniversalInput(_ => { }, args);
+
         public static (string, int) RunWithBinaryInput(byte[] input, params string[] args) =>
             RunWithUniversalInput(inMemoryStream =>
             {
                 inMemoryStream.Write(input);
                 inMemoryStream.Position = 0;
             }, args);
-
-        public static (string, int) Run(params string[] args) => RunWithInput("", args);
 
         [TestCase("-V")]
         [TestCase("--version")]
