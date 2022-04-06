@@ -18,11 +18,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\pa193-bech32m-fuzzer\pa193-bech32m-fuzzer.csproj"/>
         <ProjectReference Include="..\pa193-bech32m\pa193-bech32m.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="TestResults"/>
     </ItemGroup>
 
 </Project>

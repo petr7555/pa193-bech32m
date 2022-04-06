@@ -33,3 +33,10 @@
 - try running `dotnet --version`
 - this application has been tested with .NET 5.0
 - you can download `dotnet` [here](https://dotnet.microsoft.com/en-us/download)
+
+## Run fuzzer
+
+- this project uses [SharpFuzz](https://github.com/Metalnem/sharpfuzz) for fuzzing
+- instrument the assembly by running `dotnet sharpfuzz pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m.dll`
+- start the fuzzing
+  with `afl-fuzz -i pa193-bech32m-fuzzer/testcases -o pa193-bech32m-fuzzer/findings -t 5000 dotnet pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m-fuzzer.dll`
