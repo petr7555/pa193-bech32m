@@ -28,7 +28,9 @@ jobs:
     - name: Build fuzzer project
       run: dotnet build --no-restore pa193-bech32m-fuzzer
     - name: Instrument the assembly
-      run: dotnet sharpfuzz pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m.dll
+      run: |
+        dotnet tool restore
+        dotnet sharpfuzz pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m.dll
     - name: Run fuzzer
       env:
         AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: 1
