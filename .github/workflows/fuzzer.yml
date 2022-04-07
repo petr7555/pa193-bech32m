@@ -7,10 +7,11 @@ on:
     branches: [ master ]
   schedule:
     # at 13:30 UTC every day
-    - cron: '10 * * * *' 
+    - cron: '50 * * * *' 
     
 env:
   FINDINGS_DIR: pa193-bech32m-fuzzer/findings
+  AFL_TIMEOUT: 60
 
 jobs:
   fuzzer:
@@ -40,13 +41,12 @@ jobs:
         dotnet tool restore
         dotnet sharpfuzz pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m.dll
     - name: Set longer timeout when running on cron
-      if: github.event.schedule == '10 * * * *'
-      run: echo "TIMEOUT=3600" >> $GITHUB_ENV
+      if: github.event.schedule == '50 * * * *'
+      run: echo "AFL_TIMEOUT=3600" >> $GITHUB_ENV
     - name: Run fuzzer
       env:
         AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: 1
-        TIMEOUT: 60
-      run: (./afl-2.52b/afl-fuzz -m none -i pa193-bech32m-fuzzer/testcases -o $FINDINGS_DIR -t 5000 dotnet pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m-fuzzer.dll) & sleep $TIMEOUT; kill $!
+      run: (./afl-2.52b/afl-fuzz -m none -i pa193-bech32m-fuzzer/testcases -o $FINDINGS_DIR -t 5000 dotnet pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m-fuzzer.dll) & sleep $AFL_TIMEOUT; kill $!
     - name: Replace colons in findings
       if: always()
       run: |
