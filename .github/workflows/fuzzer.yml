@@ -6,7 +6,8 @@ on:
   pull_request:
     branches: [ master ]
   schedule:
-    - cron: '19 3 * * 6'
+    # at 03:19 every day
+    - cron: '19 3 * * *' 
     
 env:
   FINDINGS_DIR: pa193-bech32m-fuzzer/findings
