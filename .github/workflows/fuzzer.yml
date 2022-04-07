@@ -7,7 +7,7 @@ on:
     branches: [ master ]
   schedule:
     # at 13:30 UTC every day
-    - cron: '40 * * * *' 
+    - cron: '10 * * * *' 
     
 env:
   FINDINGS_DIR: pa193-bech32m-fuzzer/findings
@@ -40,7 +40,7 @@ jobs:
         dotnet tool restore
         dotnet sharpfuzz pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m.dll
     - name: Set longer timeout when running on cron
-      if: github.event.schedule == '20 15 * * *'
+      if: github.event.schedule == '10 * * * *'
       run: echo "TIMEOUT=3600" >> $GITHUB_ENV
     - name: Run fuzzer
       env:
