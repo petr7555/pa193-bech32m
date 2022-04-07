@@ -7,7 +7,7 @@ on:
     branches: [ master ]
   schedule:
     # at 13:30 UTC every day
-    - cron: '30 13 * * *' 
+    - cron: '40 * * * *' 
     
 env:
   FINDINGS_DIR: pa193-bech32m-fuzzer/findings
