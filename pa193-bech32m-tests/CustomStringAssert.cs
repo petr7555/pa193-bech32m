@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 namespace pa193_bech32m_tests
 {
-    public static class StringAssert
+    public static class CustomStringAssert
     {
         public static void HasNonZeroLength(string s)
         {

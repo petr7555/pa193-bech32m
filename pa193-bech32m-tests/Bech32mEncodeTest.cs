@@ -58,14 +58,14 @@ namespace pa193_bech32m_tests
         [Test]
         public void ReturnsNonZeroLengthStringWhenInputIsEmpty()
         {
-            StringAssert.HasNonZeroLength(Bech32m.Encode("abc", ""));
+            CustomStringAssert.HasNonZeroLength(Bech32m.Encode("abc", ""));
         }
 
         [TestCase(1000)]
         [TestCase(1_000_000)]
         public void ReturnsNonZeroLengthStringForLongInput(int length)
         {
-            StringAssert.HasNonZeroLength(Bech32m.Encode("abc", new string('a', length)));
+            CustomStringAssert.HasNonZeroLength(Bech32m.Encode("abc", new string('a', length)));
         }
 
         /** ************** **/

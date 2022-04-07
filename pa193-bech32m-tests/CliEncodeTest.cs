@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using static pa193_bech32m_tests.CliTest;
 
@@ -17,7 +18,7 @@ Arguments:
 Options:
   --hrp <hrp>                human-readable part. Consists of 1–83 ASCII characters in range [33, 126].
   -f, --format <format>      format of input data (choices: ""hex"", ""base64"", ""binary"", default: ""hex"")
-  -i, --input <inputfile>    input file with data
+  -i, --input <inputfile>    input file with data. For ""hex"" and ""base64"" format the newline characters are ignored.
   -o, --output <outputfile>  output file where result will be saved. If not present, result is printed to stdout.
   -h, --help                 display help for command
 ";
@@ -27,6 +28,7 @@ Options:
         private const string TestInputBase64File = "test_input_base64_file";
         private const string TestInputRandomCharactersFile = "test_input_random_characters_file";
         private const string TestInputEmptyFile = "test_input_empty_file";
+        private const string TestInputFile = "test_input_file";
 
         private const string TestOutputFile = "test_output_file";
 
@@ -48,6 +50,7 @@ Options:
             File.Delete(TestInputBase64File);
             File.Delete(TestInputRandomCharactersFile);
             File.Delete(TestInputEmptyFile);
+            File.Delete(TestInputFile);
         }
 
         [SetUp]
@@ -421,6 +424,95 @@ Options:
                 RunWithBinaryInput(new byte[] {18, 239, 52}, "encode", "--hrp", "abc", "--output", TestOutputFile,
                     "--format", "binary"));
             Assert.AreEqual("abc1zthng4l66t2", File.ReadAllText(TestOutputFile));
+        }
+
+        [TestCase("hex", 1024)]
+        [TestCase("hex", 4096)]
+        [TestCase("hex", 1_000_000)]
+        [TestCase("base64", 1024)]
+        [TestCase("base64", 4096)]
+        [TestCase("base64", 1_000_000)]
+        public void HandlesLargeHexAndBase64DataFromPipe(string format, int length)
+        {
+            var (output, code) = RunWithInput(new string('a', length), "encode", "--hrp", "abc", "--format", format);
+
+            StringAssert.DoesNotContain("error", output);
+            Assert.AreEqual(0, code);
+        }
+
+        [TestCase(1024)]
+        [TestCase(4096)]
+        [TestCase(1_000_000)]
+        [TestCase(1_000_001)]
+        public void HandlesLargeBinaryDataFromPipe(int length)
+        {
+            var (output, code) = RunWithBinaryInput(Enumerable.Repeat((byte) 94, length).ToArray(), "encode", "--hrp",
+                "abc", "--format", "binary");
+
+            StringAssert.DoesNotContain("error", output);
+            Assert.AreEqual(0, code);
+        }
+
+        [TestCase("hex", 1024)]
+        [TestCase("hex", 4096)]
+        [TestCase("hex", 1_000_000)]
+        [TestCase("base64", 1024)]
+        [TestCase("base64", 4096)]
+        [TestCase("base64", 1_000_000)]
+        public void HandlesLargeHexAndBase64DataFromFile(string format, int length)
+        {
+            File.WriteAllText(TestInputFile, new string('a', length));
+
+            var (output, code) = Run("encode", "--hrp", "abc", "--format", format, "--input", TestInputFile);
+
+            StringAssert.DoesNotContain("error", output);
+            Assert.AreEqual(0, code);
+        }
+
+        [TestCase(1024)]
+        [TestCase(4096)]
+        [TestCase(1_000_000)]
+        [TestCase(1_000_001)]
+        public void HandlesLargeBinaryDataFromFile(int length)
+        {
+            File.WriteAllBytes(TestInputFile, Enumerable.Repeat((byte) 94, length).ToArray());
+
+            var (output, code) = Run("encode", "--hrp", "abc", "--format", "binary", "--input", TestInputFile);
+
+            StringAssert.DoesNotContain("error", output);
+            Assert.AreEqual(0, code);
+        }
+
+        [TestCase("hex", "12ef34\n")]
+        [TestCase("hex", "12e\nf\n34\n")]
+        [TestCase("hex", "12ef34\r\n")]
+        [TestCase("hex", "12e\r\nf\r\n34\r\n")]
+        [TestCase("hex", "12e\nf\r\n34\n")]
+        [TestCase("base64", "Eu80\n")]
+        [TestCase("base64", "E\nu\n80\n")]
+        [TestCase("base64", "Eu80\r\n")]
+        [TestCase("base64", "E\r\nu\r\n80\r\n")]
+        [TestCase("base64", "E\nu\r\n80\n")]
+        public void IgnoresNewlinesInHexAndBase64File(string format, string contents)
+        {
+            File.WriteAllText(TestInputFile, contents);
+            Assert.AreEqual(("Result:\nabc1zthng4l66t2\n", 0),
+                Run("encode", "--hrp", "abc", "--format", format, "--input", TestInputFile));
+        }
+
+        // \r = CR = \x0d = 13
+        // \n = LF = \x0a = 10
+        // 12 ef 34 0d 0a
+        [TestCase(new byte[] {18, 239, 52, 13, 10}, "abc1zthngrg2hys5s3")]
+        [TestCase(new byte[] {18, 239, 52, 10}, "abc1zthngzs6takgr")]
+        [TestCase(new byte[] {18, 10, 239, 52, 10}, "abc1zg9w7dq2g2j5ha")]
+        [TestCase(new byte[] {18, 13, 10, 239, 52, 13, 10}, "abc1zgxs4me5p59qw80x8e")]
+        [TestCase(new byte[] {18, 13, 10, 239, 52, 10}, "abc1zgxs4me5pgk50wlg")]
+        public void DoesNoIgnoreNewlinesInBinaryFile(byte[] contents, string expected)
+        {
+            File.WriteAllBytes(TestInputFile, contents);
+            Assert.AreEqual(($"Result:\n{expected}\n", 0),
+                Run("encode", "--hrp", "abc", "--format", "binary", "--input", TestInputFile));
         }
     }
 }

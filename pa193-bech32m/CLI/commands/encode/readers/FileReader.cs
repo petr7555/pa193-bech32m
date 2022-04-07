@@ -30,7 +30,9 @@ namespace pa193_bech32m.CLI.commands.encode.readers
                 return (true, "");
             }
 
-            return (false, File.ReadAllText(_inputFileName));
+            var fileContents = File.ReadAllText(_inputFileName);
+            var fileContentsWithoutNewlines = fileContents.Replace("\r", "").Replace("\n", "");
+            return (false, fileContentsWithoutNewlines);
         }
 
         public (bool hasError, byte[] data) ReadBytes()
