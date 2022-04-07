@@ -5,6 +5,9 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  schedule:
+    - cron: '19 3 * * 6'
+    
 env:
   FINDINGS_DIR: pa193-bech32m-fuzzer/findings
 jobs:
@@ -49,7 +52,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: fuzzer_findings
-        path: $FINDINGS_DIR
+        path: ${{ env.FINDINGS_DIR }}
     - name: Fail if crashing inputs have been found
       if: always()
       run: \[ "$(ls -A $FINDINGS_DIR/crashes)" \] && exit 1
