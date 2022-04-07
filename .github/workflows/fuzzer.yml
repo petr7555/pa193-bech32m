@@ -25,11 +25,11 @@ jobs:
         wget https://github.com/Metalnem/sharpfuzz/raw/master/patches/RemoveInstrumentationCheck.diff
         patch < RemoveInstrumentationCheck.diff
         make
-        pwd
+        ls -l
     - name: Restore dependencies
       run: dotnet restore
     - name: Build fuzzer project
       run: dotnet build --no-restore pa193-bech32m-fuzzer
     - name: Run fuzzer
-      run: afl-fuzz -i pa193-bech32m-fuzzer/testcases -o pa193-bech32m-fuzzer/findings -t 5000 dotnet pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m-fuzzer.dll
+      run: ./afl-fuzz -i pa193-bech32m-fuzzer/testcases -o pa193-bech32m-fuzzer/findings -t 5000 dotnet pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m-fuzzer.dll
       
