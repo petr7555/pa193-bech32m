@@ -35,6 +35,5 @@ jobs:
         AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: 1
       run: |
         pwd
-        echo core >/proc/sys/kernel/core_pattern
         ./afl-2.52b/afl-fuzz -i pa193-bech32m-fuzzer/testcases -o pa193-bech32m-fuzzer/findings -t 5000 dotnet pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m-fuzzer.dll
       
