@@ -49,6 +49,3 @@ jobs:
       with:
         name: fuzzer_findings
         path: pa193-bech32m-fuzzer/findings/
-    - name: Fail if crashing inputs have been found
-      if: always()
-      run: 
