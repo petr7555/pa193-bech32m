@@ -34,10 +34,10 @@ jobs:
         dotnet tool restore
         dotnet sharpfuzz pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m.dll
     - name: Run fuzzer
-      timeout-minutes: 3
       env:
         AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: 1
-      run: ./afl-2.52b/afl-fuzz -m none -i pa193-bech32m-fuzzer/testcases -o pa193-bech32m-fuzzer/findings -t 5000 dotnet pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m-fuzzer.dll
+        TIMEOUT: 60
+      run: (./afl-2.52b/afl-fuzz -m none -i pa193-bech32m-fuzzer/testcases -o pa193-bech32m-fuzzer/findings -t 5000 dotnet pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m-fuzzer.dll) & sleep $TIMEOUT; kill $!
     - name: Save findings from fuzzing
       uses: actions/upload-artifact@v3
       with:
