@@ -22,6 +22,8 @@ jobs:
         wget http://lcamtuf.coredump.cx/afl/releases/afl-latest.tgz
         tar -xvf afl-latest.tgz
         cd afl-2.52b/
+        wget https://github.com/Metalnem/sharpfuzz/raw/master/patches/RemoveInstrumentationCheck.diff
+        patch < RemoveInstrumentationCheck.diff
         make
     - name: Restore dependencies
       run: dotnet restore
