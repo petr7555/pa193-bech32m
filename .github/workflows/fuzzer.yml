@@ -1,0 +1,34 @@
+name: Fuzzer
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  fuzzer:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Download AFL
+      run: |
+        wget http://lcamtuf.coredump.cx/afl/releases/afl-latest.tgz
+        tar -xvf afl-latest.tgz
+        rm afl-latest.tgz
+        cd afl-2.52b/
+        wget https://github.com/Metalnem/sharpfuzz/raw/master/patches/RemoveInstrumentationCheck.diff
+        patch < RemoveInstrumentationCheck.diff
+        make install
+        cd ..
+        rm -rf afl-2.52b/
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
