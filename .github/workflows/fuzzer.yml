@@ -40,10 +40,15 @@ jobs:
       run: (./afl-2.52b/afl-fuzz -m none -i pa193-bech32m-fuzzer/testcases -o pa193-bech32m-fuzzer/findings -t 5000 dotnet pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m-fuzzer.dll) & sleep $TIMEOUT; kill $!
     - name: Replace colons in findings
       if: always()
-      run: find pa193-bech32m-fuzzer/findings/ -name "*:*" -exec rename 's|:|-|g' {} \;
+      run: |
+        sudo apt-get install -y rename
+        find pa193-bech32m-fuzzer/findings/ -name "*:*" -exec rename 's|:|-|g' {} \;
     - name: Save findings from fuzzing
       if: always()
       uses: actions/upload-artifact@v3
       with:
         name: fuzzer_findings
         path: pa193-bech32m-fuzzer/findings/
+    - name: Fail if crashing inputs have been found
+      if: always()
+      run: 
