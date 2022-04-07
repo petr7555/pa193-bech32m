@@ -15,6 +15,7 @@ namespace pa193_bech32m_tests
             Bech32mFuzzer.FuzzHrp(input);
             Bech32mFuzzer.FuzzData(input);
             Bech32mFuzzer.FuzzHrpAndData(input);
+            Bech32mFuzzer.FuzzCli(input);
         }
     }
 }

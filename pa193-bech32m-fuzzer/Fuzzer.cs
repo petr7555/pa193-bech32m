@@ -22,12 +22,20 @@ namespace pa193_bech32m_fuzzer
             Bech32m.Encode(hrp, data);
         }
 
+        public static void FuzzCli(string input)
+        {
+            var hrp = input[..(input.Length / 2)];
+            var data = input[(input.Length / 2)..];
+            Program.Main(new[] {"encode", "--hrp", hrp, data});
+        }
+
         public static void Main()
         {
             /* Choose what to fuzz */
             // Fuzzer.Run(FuzzData);
             // Fuzzer.Run(FuzzHrp);
-            Fuzzer.Run(FuzzHrpAndData);
+            // Fuzzer.Run(FuzzHrpAndData);
+            Fuzzer.Run(FuzzCli);
         }
     }
 }
