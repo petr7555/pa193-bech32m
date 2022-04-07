@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using pa193_bech32m.CLI.commands.encode;
 using pa193_bech32m.CLI.commands.help;
 using pa193_bech32m.CLI.options;
@@ -13,6 +14,13 @@ namespace pa193_bech32m.CLI
         public const int ExitFailure = 1;
         private const string Version = "0.0.1";
         private const string Description = "Bech32m encoder and decoder";
+
+        /* Utf8Encoder that removes invalid characters instead of throwing an EncoderFallbackException */
+        private static readonly Encoding Utf8Encoder = Encoding.GetEncoding(
+            "UTF-8",
+            new EncoderReplacementFallback(string.Empty),
+            new DecoderExceptionFallback()
+        );
 
         private readonly IOption HelpOption;
 
@@ -103,7 +111,8 @@ namespace pa193_bech32m.CLI
         /** PUBLIC INTERFACE **/
         public static void PrintError(string error)
         {
-            Console.WriteLine($"error: {error}");
+            var utf8Text = Utf8Encoder.GetString(Utf8Encoder.GetBytes($"error: {error}"));
+            Console.WriteLine(utf8Text);
         }
 
         public static bool IsOption(string arg) => arg.StartsWith("-") || arg.StartsWith("--");

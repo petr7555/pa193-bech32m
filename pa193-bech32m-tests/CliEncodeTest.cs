@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using pa193_bech32m_fuzzer;
 using static pa193_bech32m_tests.CliTest;
 
 namespace pa193_bech32m_tests
@@ -508,11 +509,26 @@ Options:
         [TestCase(new byte[] {18, 10, 239, 52, 10}, "abc1zg9w7dq2g2j5ha")]
         [TestCase(new byte[] {18, 13, 10, 239, 52, 13, 10}, "abc1zgxs4me5p59qw80x8e")]
         [TestCase(new byte[] {18, 13, 10, 239, 52, 10}, "abc1zgxs4me5pgk50wlg")]
-        public void DoesNoIgnoreNewlinesInBinaryFile(byte[] contents, string expected)
+        public void DoesNotIgnoreNewlinesInBinaryFile(byte[] contents, string expected)
         {
             File.WriteAllBytes(TestInputFile, contents);
             Assert.AreEqual(($"Result:\n{expected}\n", 0),
                 Run("encode", "--hrp", "abc", "--format", "binary", "--input", TestInputFile));
+        }
+
+        [Test]
+        public void HandlesFoundCrashes()
+        {
+            var testDir = Directory.GetParent(Environment.CurrentDirectory)?.Parent?.Parent?.FullName;
+            var crashesDir = Path.Join(testDir, "crashes");
+            Assert.Multiple(() =>
+            {
+                foreach (var file in Directory.GetFiles(crashesDir))
+                {
+                    var contents = File.ReadAllText(file);
+                    Assert.DoesNotThrow(() => Bech32mFuzzer.FuzzCli(contents));
+                }
+            });
         }
     }
 }
