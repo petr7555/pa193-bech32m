@@ -17,7 +17,6 @@
 
 - clone the repository and `cd` into it
 - `dotnet run --project pa193-bech32m`
-- the command
 
 ## Run tests
 
