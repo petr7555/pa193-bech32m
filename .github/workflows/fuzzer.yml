@@ -10,6 +10,7 @@ on:
     
 env:
   FINDINGS_DIR: pa193-bech32m-fuzzer/findings
+
 jobs:
   fuzzer:
 
@@ -55,4 +56,4 @@ jobs:
         path: ${{ env.FINDINGS_DIR }}
     - name: Fail if crashing inputs have been found
       if: always()
-      run: \[ "$(ls -A $FINDINGS_DIR/crashes)" \] && echo notempty
+      run: \[ "$(ls -A findings/crashes)" \] && { echo "Crashes found"; exit 1; } || echo "No crashes found."
