@@ -236,8 +236,8 @@ Options:
         [TestCase("base64")]
         public void CanReadEmptyDataArgumentInAnyFormat(string format)
         {
-            Assert.AreEqual(($"Result:\nabc1k7c8sc\n", 0),
-                RunWithInput("", "encode", "--hrp", "abc", "--format", format, ""));
+            Assert.AreEqual(("Result:\nabc1k7c8sc\n", 0),
+                Run("encode", "--hrp", "abc", "--format", format, ""));
         }
 
         /** ************************* **/
