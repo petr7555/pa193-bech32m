@@ -526,7 +526,7 @@ Options:
                 foreach (var file in Directory.GetFiles(crashesDir))
                 {
                     var contents = File.ReadAllText(file);
-                    Assert.DoesNotThrow(() => Bech32mFuzzer.FuzzCli(contents));
+                    Assert.DoesNotThrow(() => Bech32mFuzzer.FuzzCliHrpAndData(contents));
                 }
             });
         }

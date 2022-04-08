@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Text;
 using NUnit.Framework;
 using pa193_bech32m_fuzzer;
 
@@ -15,7 +18,29 @@ namespace pa193_bech32m_tests
             Bech32mFuzzer.FuzzHrp(input);
             Bech32mFuzzer.FuzzData(input);
             Bech32mFuzzer.FuzzHrpAndData(input);
-            Bech32mFuzzer.FuzzCli(input);
+            Bech32mFuzzer.FuzzCliHrpAndData(input);
+        }
+
+        private static (string, int) Run(string[] args)
+        {
+            var outMemoryStream = new MemoryStream();
+            Console.SetOut(new StreamWriter(outMemoryStream) {AutoFlush = true});
+
+            var exitCode = Bech32mFuzzer.Main(args);
+            return (Encoding.Default.GetString(outMemoryStream.ToArray()), exitCode);
+        }
+
+        [Test]
+        public void PrintsErrorAndReturnsOneWhenFuzzTestNameIsNotGivenAsArgument()
+        {
+            Assert.AreEqual(("Pass fuzz test name as the first argument.\n", 1), Run(Array.Empty<string>()));
+        }
+
+        [Test]
+        public void PrintsErrorAndReturnsOneWhenFuzzTestGivenAsArgumentDoesNotExist()
+        {
+            const string fuzzTestName = "nonexistent";
+            Assert.AreEqual(($"Fuzz test {fuzzTestName} does not exist.\n", 1), Run(new[] {fuzzTestName}));
         }
     }
 }

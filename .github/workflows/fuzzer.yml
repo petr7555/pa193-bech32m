@@ -18,6 +18,11 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        fuzz-test: [ 'FuzzHrp', 'FuzzData', 'FuzzHrpAndData', 'FuzzCliHrpAndData' ]
+
+
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET
@@ -46,7 +51,7 @@ jobs:
     - name: Run fuzzer
       env:
         AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: 1
-      run: (./afl-2.52b/afl-fuzz -m none -i pa193-bech32m-fuzzer/testcases -o $FINDINGS_DIR -t 5000 dotnet pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m-fuzzer.dll) & sleep $AFL_TIMEOUT; kill $!
+      run: (./afl-2.52b/afl-fuzz -m none -i pa193-bech32m-fuzzer/testcases -o $FINDINGS_DIR -t 5000 dotnet pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m-fuzzer.dll ${{ matrix.fuzz-test }}) & sleep $AFL_TIMEOUT; kill $!
     - name: Replace colons in findings
       if: always()
       run: |

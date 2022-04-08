@@ -33,8 +33,10 @@
 - you need to [install afl](#install-afl)
 - build the project with `dotnet build pa193-bech32m-fuzzer`
 - instrument the assembly by running `dotnet sharpfuzz pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m.dll`
-- start the fuzzing
-  with `afl-fuzz -i pa193-bech32m-fuzzer/testcases -o pa193-bech32m-fuzzer/findings -t 5000 dotnet pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m-fuzzer.dll`
+- start the fuzzing with
+  `afl-fuzz -i pa193-bech32m-fuzzer/testcases -o pa193-bech32m-fuzzer/findings -t 5000 dotnet pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m-fuzzer.dll FUZZ_TEST_NAME`
+  where `FUZZ_TEST_NAME` is one of the public static methods available in `pa193-bech32m-fuzzer/Fuzzer.cs`
+  (e.g. _FuzzData_)
 
 ## Install dotnet
 
