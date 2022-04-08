@@ -48,7 +48,7 @@
 ## Install afl
 
 - instructions taken from https://github.com/Metalnem/sharpfuzz#installation
-  ```
+  ```bash
   # Download and extract the latest afl-fuzz source package
   wget http://lcamtuf.coredump.cx/afl/releases/afl-latest.tgz
   tar -xvf afl-latest.tgz
