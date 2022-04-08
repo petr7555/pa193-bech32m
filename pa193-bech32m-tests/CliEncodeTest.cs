@@ -208,6 +208,12 @@ Options:
             Assert.AreEqual(("error: data are not in hex format\n", 1), Run("encode", "--hrp", "abc", "xy"));
         }
 
+        [Test]
+        public void PrintsErrorMessageAndExitsWithOneWhenCalledWithValidHrpAndWithOddNumberOfHexCharacters()
+        {
+            Assert.AreEqual(("error: data are not in hex format\n", 1), Run("encode", "--hrp", "abc", "12ef3"));
+        }
+
         [TestCase("xy")]
         [TestCase("Eu80")]
         public void PrintsErrorMessageAndExitsWithOneWhenCalledWithValidHrpAndFormatHexAndWithNonHexData(
