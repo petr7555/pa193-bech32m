@@ -20,7 +20,8 @@ jobs:
 
     strategy:
       matrix:
-        fuzz-test: [ 'FuzzHrp', 'FuzzData', 'FuzzHrpAndData', 'FuzzCliHrpAndData' ]
+        fuzz-test: [ 'FuzzHrp', 'FuzzData', 'FuzzHrpAndData', 'FuzzCliHrpAndData',
+            'FuzzCliWithHexInputFile', 'FuzzCliWithBase64InputFile', 'FuzzCliWithBinaryInputFile' ]
 
     steps:
     - uses: actions/checkout@v2
