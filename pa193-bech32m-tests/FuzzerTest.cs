@@ -19,6 +19,9 @@ namespace pa193_bech32m_tests
             Bech32mFuzzer.FuzzData(input);
             Bech32mFuzzer.FuzzHrpAndData(input);
             Bech32mFuzzer.FuzzCliHrpAndData(input);
+            Bech32mFuzzer.FuzzCliWithHexInputFile(input);
+            Bech32mFuzzer.FuzzCliWithBase64InputFile(input);
+            Bech32mFuzzer.FuzzCliWithBinaryInputFile(input);
         }
 
         private static (string, int) Run(string[] args)

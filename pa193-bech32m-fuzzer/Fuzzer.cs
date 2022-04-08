@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using pa193_bech32m;
 using SharpFuzz;
 
@@ -8,6 +9,16 @@ namespace pa193_bech32m_fuzzer
     {
         private static (string, string) SplitInHalf(string input) =>
             (input[..(input.Length / 2)], input[(input.Length / 2)..]);
+
+        private static void FuzzCliWithInputReadAsGivenFormat(string input, string format)
+        {
+            const string testInputFile = "test_input_file";
+            File.WriteAllText(testInputFile, input);
+            Program.Main(new[]
+            {
+                "encode", "--hrp", "abc", "--format", format, "--input", testInputFile, "--output", "test_output_file"
+            });
+        }
 
         public static void FuzzHrp(string input)
         {
@@ -30,6 +41,15 @@ namespace pa193_bech32m_fuzzer
             var (hrp, data) = SplitInHalf(input);
             Program.Main(new[] {"encode", "--hrp", hrp, data});
         }
+
+        public static void FuzzCliWithHexInputFile(string input) =>
+            FuzzCliWithInputReadAsGivenFormat(input, "hex");
+
+        public static void FuzzCliWithBase64InputFile(string input) =>
+            FuzzCliWithInputReadAsGivenFormat(input, "base64");
+
+        public static void FuzzCliWithBinaryInputFile(string input) =>
+            FuzzCliWithInputReadAsGivenFormat(input, "binary");
 
         public static int Main(string[] args)
         {
