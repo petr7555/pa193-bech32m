@@ -27,6 +27,15 @@
 
 - `dotnet publish -c Release pa193-bech32m`
 
+## Run fuzzer
+
+- this project uses [SharpFuzz](https://github.com/Metalnem/sharpfuzz) for fuzzing
+- you need to [install afl](#install-afl)
+- build the project with `dotnet build pa193-bech32m-fuzzer`
+- instrument the assembly by running `dotnet sharpfuzz pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m.dll`
+- start the fuzzing
+  with `afl-fuzz -i pa193-bech32m-fuzzer/testcases -o pa193-bech32m-fuzzer/findings -t 5000 dotnet pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m-fuzzer.dll`
+
 ## Install dotnet
 
 - you need `dotnet` to run this application
@@ -34,10 +43,26 @@
 - this application has been tested with .NET 5.0
 - you can download `dotnet` [here](https://dotnet.microsoft.com/en-us/download)
 
-## Run fuzzer
+## Install afl
 
-- this project uses [SharpFuzz](https://github.com/Metalnem/sharpfuzz) for fuzzing
-- build the project with `dotnet build pa193-bech32m-fuzzer`
-- instrument the assembly by running `dotnet sharpfuzz pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m.dll`
-- start the fuzzing
-  with `afl-fuzz -i pa193-bech32m-fuzzer/testcases -o pa193-bech32m-fuzzer/findings -t 5000 dotnet pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m-fuzzer.dll`
+- instructions taken from https://github.com/Metalnem/sharpfuzz#installation
+  ```
+  # Download and extract the latest afl-fuzz source package
+  wget http://lcamtuf.coredump.cx/afl/releases/afl-latest.tgz
+  tar -xvf afl-latest.tgz
+  
+  rm afl-latest.tgz
+  cd afl-2.52b/
+  
+  # Patch afl-fuzz so that it doesn't check whether the binary
+  # being fuzzed is instrumented (we have to do this because
+  # we are going to run our programs with the dotnet run command,
+  # and the dotnet binary would fail this check)
+  wget https://github.com/Metalnem/sharpfuzz/raw/master/patches/RemoveInstrumentationCheck.diff
+  patch < RemoveInstrumentationCheck.diff
+  
+  # Install afl-fuzz
+  make install
+  cd ..
+  rm -rf afl-2.52b/
+  ```
