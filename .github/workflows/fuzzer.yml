@@ -6,8 +6,8 @@ on:
   pull_request:
     branches: [ master ]
   schedule:
-    # at 13:30 UTC every day
-    - cron: '50 * * * *' 
+    # Run at 3:10 and 14:10 UTC every day.
+    - cron: '10 3,14 * * *' 
     
 env:
   FINDINGS_DIR: pa193-bech32m-fuzzer/findings
@@ -46,8 +46,9 @@ jobs:
         dotnet tool restore
         dotnet sharpfuzz pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m.dll
     - name: Set longer timeout when running on cron
-      if: github.event.schedule == '50 * * * *'
-      run: echo "AFL_TIMEOUT=3600" >> $GITHUB_ENV
+      if: github.event.schedule == '10 3,14 * * *'
+      # Run fuzzing for 10 hours
+      run: echo "AFL_TIMEOUT=36000" >> $GITHUB_ENV
     - name: Run fuzzer
       env:
         AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: 1
