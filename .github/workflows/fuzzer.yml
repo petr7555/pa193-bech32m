@@ -48,8 +48,8 @@ jobs:
         dotnet sharpfuzz pa193-bech32m-fuzzer/bin/Debug/net5.0/pa193-bech32m.dll
     - name: Set longer timeout when running on cron
       if: github.event.schedule == '10 3,14 * * *'
-      # Run fuzzing for 10 hours
-      run: echo "AFL_TIMEOUT=36000" >> $GITHUB_ENV
+      # Run fuzzing for 5 hours
+      run: echo "AFL_TIMEOUT=18000" >> $GITHUB_ENV
     - name: Run fuzzer
       env:
         AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: 1
