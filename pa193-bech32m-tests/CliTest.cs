@@ -55,7 +55,7 @@ Commands:
         [TestCase("--version")]
         public void PrintsVersionAndExistsWithZeroOnVersionFlag(string versionFlag)
         {
-            Assert.AreEqual(("0.0.1\n", 0), Run(versionFlag));
+            Assert.AreEqual(("0.1.0\n", 0), Run(versionFlag));
         }
 
         [TestCase("-h")]

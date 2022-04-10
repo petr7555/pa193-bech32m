@@ -12,7 +12,7 @@ namespace pa193_bech32m.CLI
     {
         public const int ExitSuccess = 0;
         public const int ExitFailure = 1;
-        private const string Version = "0.0.1";
+        private const string Version = "0.1.0";
         private const string Description = "Bech32m encoder and decoder";
 
         /* Utf8Encoder that removes invalid characters instead of throwing an EncoderFallbackException */
