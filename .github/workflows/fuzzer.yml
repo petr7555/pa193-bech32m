@@ -63,7 +63,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v3
       with:
-        name: fuzzer_findings
+        name: fuzzer_findings_${{ matrix.fuzz-test }}_${{ matrix.dirty-option }}
         path: ${{ env.FINDINGS_DIR }}
     - name: Fail if crashing inputs have been found
       if: always()
