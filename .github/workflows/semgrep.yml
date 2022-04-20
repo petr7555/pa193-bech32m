@@ -1,13 +1,13 @@
-on:
-  pull_request: {}
-  push:
-    branches:
-    - master
-    paths:
-    - .github/workflows/semgrep.yml
-  schedule:
-  - cron: '0 0 * * 0'
 name: Semgrep
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+  - cron: '25 0 * * 0'
+  
 jobs:
   semgrep:
     name: Scan
@@ -16,6 +16,16 @@ jobs:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
     container:
       image: returntocorp/semgrep
+      
     steps:
     - uses: actions/checkout@v3
-    - run: semgrep ci
+    
+    - name: Run Semgrep
+    - run: semgrep ci --sarif --output=semgrep.sarif
+    
+    - name: Upload SARIF file
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: semgrep.sarif
+      if: always()
+      
