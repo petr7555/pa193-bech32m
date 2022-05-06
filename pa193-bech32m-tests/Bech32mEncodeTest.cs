@@ -28,44 +28,44 @@ namespace pa193_bech32m_tests
         [TestCase("0",
             "1111111111222222222233333333334444444444555555555566666666667777777777888888888899999999990000000000",
             "01zyg3zyg3yg3zyg3zxvenxveng3zyg3zy24242424venxvenxwamhwamh3zyg3zygnxvenxveqqqqqqqqx7f72k")]
-        [TestCase("1",
-            "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc0",
-            "11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllqq4dt6ek")]
         public void EncodesNonEmptyHrpWithInput(string hrp, string input, string expected)
         {
-            Assert.AreEqual(expected, Bech32m.Encode(hrp, input));
+            var (encodedString, errorMsg) = Bech32m.Encode(hrp, input);
+            Assert.AreEqual(expected, encodedString);
+            Assert.IsEmpty(errorMsg);
         }
 
         [Test]
         public void EncodedStringStartsWithHrp()
         {
             const string hrp = "abc";
-            Assert.That(Bech32m.Encode(hrp, "12ef"), Does.StartWith(hrp));
+            var (encodedString, errorMsg) = Bech32m.Encode(hrp, "12ef");
+            Assert.That(encodedString, Does.StartWith(hrp));
+            Assert.IsEmpty(errorMsg);
         }
 
         [Test]
         public void EncodedStringContainsSeparator()
         {
-            Assert.That(Bech32m.Encode("abc", "12ef"), Does.Contain('1'));
+            var (encodedString, errorMsg) = Bech32m.Encode("abc", "12ef");
+            Assert.That(encodedString, Does.Contain('1'));
+            Assert.IsEmpty(errorMsg);
         }
 
         [Test]
         public void EncodesHrpContaining1()
         {
-            Assert.AreEqual("a1b1c11zthsah97t8", Bech32m.Encode("a1b1c1", "12ef"));
+            var (encodedString, errorMsg) = Bech32m.Encode("a1b1c1", "12ef");
+            Assert.AreEqual("a1b1c11zthsah97t8", encodedString);
+            Assert.IsEmpty(errorMsg);
         }
 
         [Test]
         public void ReturnsNonZeroLengthStringWhenInputIsEmpty()
         {
-            CustomStringAssert.HasNonZeroLength(Bech32m.Encode("abc", ""));
-        }
-
-        [TestCase(1000)]
-        [TestCase(1_000_000)]
-        public void ReturnsNonZeroLengthStringForLongInput(int length)
-        {
-            CustomStringAssert.HasNonZeroLength(Bech32m.Encode("abc", new string('a', length)));
+            var (encodedString, errorMsg) = Bech32m.Encode("abc", "");
+            CustomStringAssert.HasNonZeroLength(encodedString);
+            Assert.IsEmpty(errorMsg);
         }
 
         /** ************** **/
@@ -74,13 +74,17 @@ namespace pa193_bech32m_tests
         [Test]
         public void ReturnsEmptyStringWhenHrpIsNull()
         {
-            Assert.IsEmpty(Bech32m.Encode(null, "12ef"));
+            var (encodedString, errorMsg) = Bech32m.Encode(null, "12ef");
+            Assert.IsEmpty(encodedString);
+            Assert.AreEqual("hrp must not be empty", errorMsg);
         }
 
         [Test]
         public void ReturnsEmptyStringWhenHrpIsEmpty()
         {
-            Assert.IsEmpty(Bech32m.Encode("", "12ef"));
+            var (encodedString, errorMsg) = Bech32m.Encode("", "12ef");
+            Assert.IsEmpty(encodedString);
+            Assert.AreEqual("hrp must not be empty", errorMsg);
         }
 
         [TestCase("\x20")]
@@ -94,7 +98,9 @@ namespace pa193_bech32m_tests
         [TestCase("\x14")]
         public void ReturnsEmptyStringWhenHrpContainsInvalidCharacters(string hrp)
         {
-            Assert.IsEmpty(Bech32m.Encode(hrp, "12ef"));
+            var (encodedString, errorMsg) = Bech32m.Encode(hrp, "12ef");
+            Assert.IsEmpty(encodedString);
+            Assert.AreEqual("hrp contains invalid characters", errorMsg);
         }
 
         [TestCase(84)]
@@ -102,7 +108,9 @@ namespace pa193_bech32m_tests
         [TestCase(1_000_001)]
         public void ReturnsEmptyStringWhenHrpIsTooLong(int length)
         {
-            Assert.IsEmpty(Bech32m.Encode(new string('a', length), "12ef"));
+            var (encodedString, errorMsg) = Bech32m.Encode(new string('a', length), "12ef");
+            Assert.IsEmpty(encodedString);
+            Assert.AreEqual("hrp must not be longer than 83 characters", errorMsg);
         }
 
         /** **************** **/
@@ -111,7 +119,9 @@ namespace pa193_bech32m_tests
         [Test]
         public void ReturnsEmptyStringWhenInputIsNull()
         {
-            Assert.IsEmpty(Bech32m.Encode("abc", null));
+            var (encodedString, errorMsg) = Bech32m.Encode("abc", null);
+            Assert.IsEmpty(encodedString);
+            Assert.AreEqual("data are not in hex format", errorMsg);
         }
 
         [TestCase("0")]
@@ -128,7 +138,9 @@ namespace pa193_bech32m_tests
         [TestCase("\x14")]
         public void ReturnsEmptyStringWhenInputIsNotInHexFormat(string input)
         {
-            Assert.IsEmpty(Bech32m.Encode("abc", input));
+            var (encodedString, errorMsg) = Bech32m.Encode("abc", input);
+            Assert.IsEmpty(encodedString);
+            Assert.AreEqual("data are not in hex format", errorMsg);
         }
 
         [TestCase('z', 1000)]
@@ -137,7 +149,30 @@ namespace pa193_bech32m_tests
         [TestCase('a', 1_000_001)]
         public void ReturnsEmptyStringWhenLongInputIsNotInHexFormat(char c, int length)
         {
-            Assert.IsEmpty(Bech32m.Encode("abc", new string(c, length)));
+            var (encodedString, errorMsg) = Bech32m.Encode("abc", new string(c, length));
+            Assert.IsEmpty(encodedString);
+            Assert.AreEqual("data are not in hex format", errorMsg);
+        }
+
+        /** ***************** **/
+        /** Result validation **/
+        /** ***************** **/
+        [Test]
+        public void ReturnsEmptyStringWhenResultWouldHaveMoreThan90Characters()
+        {
+            var (encodedString, errorMsg) = Bech32m.Encode(new string('a', 83), "00");
+            Assert.IsEmpty(encodedString);
+            Assert.AreEqual("Bech32m string is too long (92), maximum length is 90.", errorMsg);
+        }
+
+        [TestCase(1000, 810)]
+        [TestCase(1_000_000, 800010)]
+        public void ReturnsEmptyStringWhenResultWouldHaveMoreThan90CharactersForLongInput(int dataLength,
+            int resultLength)
+        {
+            var (encodedString, errorMsg) = Bech32m.Encode("abc", new string('a', dataLength));
+            Assert.IsEmpty(encodedString);
+            Assert.AreEqual($"Bech32m string is too long ({resultLength}), maximum length is 90.", errorMsg);
         }
     }
 }

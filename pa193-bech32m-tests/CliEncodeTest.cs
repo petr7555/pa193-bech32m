@@ -180,6 +180,16 @@ Options:
             Assert.AreEqual(("error: hrp contains invalid characters\n", 1), Run("encode", "--hrp", "\x14", "xy"));
         }
 
+        /** ***************** **/
+        /** Result validation **/
+        /** ***************** **/
+        [Test]
+        public void ReturnsEmptyStringWhenResultWouldHaveMoreThan90Characters()
+        {
+            Assert.AreEqual(("error: Bech32m string is too long (92), maximum length is 90.\n", 1),
+                Run("encode", "--hrp", new string('a', 83), "00"));
+        }
+
         /** *********************** **/
         /** Data passed as argument **/
         /** *********************** **/
@@ -433,61 +443,65 @@ Options:
             Assert.AreEqual("abc1zthng4l66t2", File.ReadAllText(TestOutputFile));
         }
 
-        [TestCase("hex", 1024)]
-        [TestCase("hex", 4096)]
-        [TestCase("hex", 1_000_000)]
-        [TestCase("base64", 1024)]
-        [TestCase("base64", 4096)]
-        [TestCase("base64", 1_000_000)]
-        public void HandlesLargeHexAndBase64DataFromPipe(string format, int length)
+        [TestCase("hex", 1024, 830)]
+        [TestCase("hex", 4096, 3287)]
+        [TestCase("hex", 1_000_000, 800010)]
+        [TestCase("base64", 1024, 1239)]
+        [TestCase("base64", 4096, 4926)]
+        [TestCase("base64", 1_000_000, 1200010)]
+        public void HandlesLargeHexAndBase64DataFromPipe(string format, int dataLength, int resultLength)
         {
-            var (output, code) = RunWithInput(new string('a', length), "encode", "--hrp", "abc", "--format", format);
+            var (output, code) =
+                RunWithInput(new string('a', dataLength), "encode", "--hrp", "abc", "--format", format);
 
-            StringAssert.DoesNotContain("error", output);
-            Assert.AreEqual(0, code);
+            Assert.AreEqual($"Enter data in {format} format. Press Enter when done.\n\n" +
+                            $"error: Bech32m string is too long ({resultLength}), maximum length is 90.\n", output);
+            Assert.AreEqual(1, code);
         }
 
-        [TestCase(1024)]
-        [TestCase(4096)]
-        [TestCase(1_000_000)]
-        [TestCase(1_000_001)]
-        public void HandlesLargeBinaryDataFromPipe(int length)
+        [TestCase(1024, 1649)]
+        [TestCase(4096, 6564)]
+        [TestCase(1_000_000, 1600010)]
+        [TestCase(1_000_001, 1600012)]
+        public void HandlesLargeBinaryDataFromPipe(int dataLength, int resultLength)
         {
-            var (output, code) = RunWithBinaryInput(Enumerable.Repeat((byte) 94, length).ToArray(), "encode", "--hrp",
+            var (output, code) = RunWithBinaryInput(Enumerable.Repeat((byte) 94, dataLength).ToArray(), "encode",
+                "--hrp",
                 "abc", "--format", "binary");
 
-            StringAssert.DoesNotContain("error", output);
-            Assert.AreEqual(0, code);
+            Assert.AreEqual("Enter data in binary format. Press Enter when done.\n\n" +
+                            $"error: Bech32m string is too long ({resultLength}), maximum length is 90.\n", output);
+            Assert.AreEqual(1, code);
         }
 
-        [TestCase("hex", 1024)]
-        [TestCase("hex", 4096)]
-        [TestCase("hex", 1_000_000)]
-        [TestCase("base64", 1024)]
-        [TestCase("base64", 4096)]
-        [TestCase("base64", 1_000_000)]
-        public void HandlesLargeHexAndBase64DataFromFile(string format, int length)
+        [TestCase("hex", 1024, 830)]
+        [TestCase("hex", 4096, 3287)]
+        [TestCase("hex", 1_000_000, 800010)]
+        [TestCase("base64", 1024, 1239)]
+        [TestCase("base64", 4096, 4926)]
+        [TestCase("base64", 1_000_000, 1200010)]
+        public void HandlesLargeHexAndBase64DataFromFile(string format, int dataLength, int resultLength)
         {
-            File.WriteAllText(TestInputFile, new string('a', length));
+            File.WriteAllText(TestInputFile, new string('a', dataLength));
 
             var (output, code) = Run("encode", "--hrp", "abc", "--format", format, "--input", TestInputFile);
 
-            StringAssert.DoesNotContain("error", output);
-            Assert.AreEqual(0, code);
+            Assert.AreEqual($"error: Bech32m string is too long ({resultLength}), maximum length is 90.\n", output);
+            Assert.AreEqual(1, code);
         }
 
-        [TestCase(1024)]
-        [TestCase(4096)]
-        [TestCase(1_000_000)]
-        [TestCase(1_000_001)]
-        public void HandlesLargeBinaryDataFromFile(int length)
+        [TestCase(1024, 1649)]
+        [TestCase(4096, 6564)]
+        [TestCase(1_000_000, 1600010)]
+        [TestCase(1_000_001, 1600012)]
+        public void HandlesLargeBinaryDataFromFile(int dataLength, int resultLength)
         {
-            File.WriteAllBytes(TestInputFile, Enumerable.Repeat((byte) 94, length).ToArray());
+            File.WriteAllBytes(TestInputFile, Enumerable.Repeat((byte) 94, dataLength).ToArray());
 
             var (output, code) = Run("encode", "--hrp", "abc", "--format", "binary", "--input", TestInputFile);
 
-            StringAssert.DoesNotContain("error", output);
-            Assert.AreEqual(0, code);
+            Assert.AreEqual($"error: Bech32m string is too long ({resultLength}), maximum length is 90.\n", output);
+            Assert.AreEqual(1, code);
         }
 
         [TestCase("hex", "12ef34\n")]

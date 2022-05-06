@@ -8,6 +8,8 @@ namespace pa193_bech32m
     {
         private const string Charset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
         private static readonly int[] Generator = {0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3};
+        private const int HrpMaxLength = 83;
+        private const int Bech32MMaxLength = 90;
 
         private static List<int> HrpExpand(string hrp)
         {
@@ -81,9 +83,9 @@ namespace pa193_bech32m
                 return (false, "hrp must not be empty");
             }
 
-            if (hrp.Length > 83)
+            if (hrp.Length > HrpMaxLength)
             {
-                return (false, "hrp must not be longer than 83 characters");
+                return (false, $"hrp must not be longer than {HrpMaxLength} characters");
             }
 
             if (hrp.Any(c => c < 33 || c > 126))
@@ -116,6 +118,17 @@ namespace pa193_bech32m
             return true;
         }
 
+        private static (bool isValid, string errorMsg) ValidateResult(string encodedString)
+        {
+            if (encodedString.Length > Bech32MMaxLength)
+            {
+                return (false,
+                    $"Bech32m string is too long ({encodedString.Length}), maximum length is {Bech32MMaxLength}.");
+            }
+
+            return (true, "");
+        }
+
         /// <summary>
         /// Encodes hrp and input data into Bech32m string.
         /// </summary>
@@ -123,12 +136,18 @@ namespace pa193_bech32m
         /// with each character having a value in the range [33-126]</param>
         /// <param name="input">String of any length (including zero length) in hexadecimal format.</param>
         /// 
-        /// <returns></returns>
-        public static string Encode(string hrp, string input)
+        /// <returns>Bech32m string and error message (nonempty when error occurred)</returns>
+        public static (string encodedString, string errorMsg) Encode(string hrp, string input)
         {
-            if (!ValidateHrp(hrp).isValid || !IsValidHexInput(input))
+            var (isValidHrp, errorMsgHrp) = ValidateHrp(hrp);
+            if (!isValidHrp)
             {
-                return "";
+                return ("", errorMsgHrp);
+            }
+
+            if (!IsValidHexInput(input))
+            {
+                return ("", "data are not in hex format");
             }
 
             var data = ConvertToBase32(input);
@@ -136,7 +155,14 @@ namespace pa193_bech32m
             var combined = data.Concat(checksum);
             var encoded = string.Join(string.Empty, combined.Select(i => Charset[i]));
             var result = hrp + "1" + encoded;
-            return result;
+
+            var (isValidResult, errorMsgResult) = ValidateResult(result);
+            if (!isValidResult)
+            {
+                return ("", errorMsgResult);
+            }
+
+            return (result, "");
         }
 
         public static (string, string) Decode(string input)

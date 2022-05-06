@@ -236,10 +236,10 @@ namespace pa193_bech32m.CLI.commands.encode
             }
 
             var hrp = options[HrpOption.Key()];
-            var (isValid, errorMsg) = Bech32m.ValidateHrp(hrp);
-            if (!isValid)
+            var (isValidHrp, errorMsgHrp) = Bech32m.ValidateHrp(hrp);
+            if (!isValidHrp)
             {
-                Cli.PrintError(errorMsg);
+                Cli.PrintError(errorMsgHrp);
                 return Cli.ExitFailure;
             }
 
@@ -269,7 +269,12 @@ namespace pa193_bech32m.CLI.commands.encode
                 return Cli.ExitFailure;
             }
 
-            var encodedString = Bech32m.Encode(hrp, hexData);
+            var (encodedString, errorMsg) = Bech32m.Encode(hrp, hexData);
+            if (errorMsg != "")
+            {
+                Cli.PrintError(errorMsg);
+                return Cli.ExitFailure;
+            }
 
             OutputResult(options, encodedString);
 

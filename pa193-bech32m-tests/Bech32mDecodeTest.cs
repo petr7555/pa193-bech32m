@@ -19,15 +19,14 @@ namespace pa193_bech32m_tests
         [TestCase("?1v759aa", "?", "")]
         // Binary input of 410 '1's gets padded to 410 '1's and 6 '0's to be divisible by 8 (and therefore hex-encodable).
         // Which results in input ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc0,
-        // which after encoding (with hrp = '1') is 11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllqq4dt6ek.
+        // which after encoding (with hrp = '1') is 11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllqq4dt6ek
+        // (which has length > 90 and is therefore invalid).
         // If we could pass binary input directly to encode() as 410 '1's, it would be split by 5 '1's into 82 '31's, resulting
         // in 11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllludsr8.
         // In reference python implementation: `bech32_encode("1", [0b0001_1111] * (410 // 5), Encoding.BECH32M)`.
         // By decoding 11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllludsr8 we get again 82 '31's,
         // which is padded by 6 '0's to be representable by hex-string ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc0.  
         // In reference python implementation: `bech32_decode("11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllludsr8")`.
-        [TestCase("11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllqq4dt6ek", "1",
-            "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc0")]
         [TestCase("11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllludsr8", "1",
             "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc0")]
         public void DecodesValidInput(string input, string expectedHrp, string expectedData)
